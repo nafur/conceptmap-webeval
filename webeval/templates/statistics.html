@@ -1,0 +1,8 @@
+{% extends 'master.html' %}
+{% block content %}
+<form>
+	{{ macros.input_topic("topic", "Topic", topics, "") }}
+	{{ macros.input_medium("medium", "Medium", "both") }}
+	{{ macros.input_ordering("ordering", "Ordering", "both") }}
+</form>
+{% endblock %}

@@ -1,0 +1,20 @@
+{% extends 'master.html' %}
+{% block content %}
+<div class="panel panel-success">
+	<div class="panel-heading">File import finished</div>
+	<div class="panel-body">
+		{% for msg in messages %}
+		<p>{{ msg }}</p>
+		{% endfor %}
+		Loaded:
+		<ul>
+		{% for f in files %}
+			<li>{{ f }}</li>
+		{% endfor %}
+		</ul>
+
+		<a href="/admin/browse" class="btn btn-default">Return to file selection</a>
+		<a href="/" class="btn btn-default">Return to home</a>
+	</div>
+</div>
+{% endblock %}

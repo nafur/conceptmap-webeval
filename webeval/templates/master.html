@@ -1,0 +1,49 @@
+{% import 'macros.html' as macros with context %}
+<!doctype html>
+<html>
+	<head>
+		<meta charset="utf8" />
+		<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" rel="stylesheet" />
+		<link href="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.8/jquery.jqplot.min.css" rel="stylesheet" />
+		<script src="https://code.jquery.com/jquery-2.1.4.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/jqPlot/1.0.8/jquery.jqplot.min.js"></script>
+		<style>
+		th.rotate {
+		  /* Something you can count on */
+		  height: 140px;
+		  white-space: nowrap;
+		}
+
+		th.rotate > div {
+		  transform:
+		    /* Magic Numbers */
+		    translate(1px, -5px)
+		    /* 45 is really 360 - 45 */
+		    rotate(315deg);
+		  width: 30px;
+		}
+		th.rotate > div > span {
+		  border-bottom: 1px solid #ccc;
+		  padding: 5px 1px;
+		}
+		.tab-content {
+			padding-top: 10px;
+		}
+		</style>
+	</head>
+	<body>
+		<nav class="navbar navbar-inverse navbar-fixed-top">
+			<div class="container">
+				<ul class="nav navbar-nav">
+					<li><a href="/"><span class="glyphicon glyphicon-home" aria-hidden="true"></span> Home</a></li>
+					<li><a href="#"><span class="glyphicon glyphicon-plus" aria-hidden="true"></span> Add new results</a></li>
+					<li><a href="/statistics"><span class="glyphicon glyphicon-th" aria-hidden="true"></span> statistics</a></li>
+				</ul>
+			</div>
+		</nav>
+		<div class="container" style="margin-top: 65px;">
+			{% block content %}{% endblock %}
+		</div>
+	</body>
+</html>

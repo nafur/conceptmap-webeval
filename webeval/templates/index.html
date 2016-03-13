@@ -1,0 +1,27 @@
+{% extends 'master.html' %}
+{% block content %}
+<div class="row">
+	<div class="col-md-6">
+		<div class="panel panel-default">
+			<div class="panel-heading">Statistics</div>
+			<div class="panel-body">
+				<div class="btn-group" role="group">
+					<a href="/statistics/nodeusage" class="btn btn-default">Node usage</a>
+					<a href="/statistics/edgeusage" class="btn btn-default">Edge usage</a>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="col-md-6">
+		<div class="panel panel-warning">
+			<div class="panel-heading"><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> Administration</div>
+			<div class="panel-body">
+				<div class="btn-group" role="group">
+					<a href="/admin/reset" class="btn btn-default" class="btn btn-default">Reset database</a>
+					<a href="/admin/browse" class="btn btn-default" class="btn btn-default">Import results</a>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+{% endblock %}

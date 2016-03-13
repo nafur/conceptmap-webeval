@@ -1,0 +1,27 @@
+{% extends 'master.html' %}
+{% block content %}
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<ol class="breadcrumb" style="margin: 0px; padding: 0px;">
+			{% for bc in breadcrumbs %}
+			<li><a href="/admin/browse/{{ bc.1 }}"><strong>{{ bc.0 }}</strong></a></li>
+			{% endfor %}
+		</ol>
+	</div>
+	<div class="panel-body">
+		<p>
+			<a href="/admin/import/{{ curpath }}" class="btn btn-default">Import selected directory</a>
+		</p>
+
+		<p>
+			{% if parent %}
+			<a href="/admin/browse/{{ parent }}" class="btn btn-default"><span class="glyphicon glyphicon-chevron-up" /> ..</a>
+			{% endif %}
+			{% for dir,path in dirs|dictsort %}
+			<a href="/admin/browse/{{ path }}" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" /> {{ dir }}</a>
+			{% endfor %}
+		</p>
+		<p>This directory contains the following files: {{ files }}</p>
+	</div>
+</div>
+{% endblock %}

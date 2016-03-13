@@ -1,0 +1,18 @@
+{% extends 'master.html' %}
+{% block content %}
+<div class="panel panel-primary">
+	<div class="panel-heading">Edge usage</div>
+	<div class="panel-body">
+		<form method="POST">
+			{{ macros.stats_generic_filter() }}
+
+			<button type="submit" class="btn btn-default">Show</button>
+		</form>
+	</div>
+</div>
+
+{% if body %}
+{{ macros.table(cols,rows,body) }}
+{{ macros.show_plot("Edge usage", plot) }}
+{% endif %}
+{% endblock %}

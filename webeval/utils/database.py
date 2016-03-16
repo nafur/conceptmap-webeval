@@ -1,10 +1,12 @@
+import functools
 import os.path
 import sqlite3
 import sys
 from flask import g
 
 DBFILE = "db.sqlite"
-VERIFICATION_FLAGS = ["verified", "formally correct", "content-wise correct", "structurally correct", "functionally correct"]
+VERIFICATION_FLAGS = ["fully verified", "formally correct", "content-wise correct", "structurally correct", "functionally correct"]
+VERIFICATION_ICONS = [["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"]]
 
 def db():
 	db = getattr(g, '_database', None)
@@ -28,9 +30,9 @@ def reset():
 	db().execute('''CREATE TABLE nodes (id integer primary key, topic int, name text)''')
 	db().execute('''CREATE TABLE students (id integer primary key, medium text, name text)''')
 	db().execute('''CREATE TABLE solutions (id integer primary key, student int, ordering int, topic int, timing int)''')
-	db().execute('''CREATE TABLE answers (id integer primary key, solution int, ordering int, src int, dest int, description text, verification int DEFAULT 0)''')
+	db().execute('''CREATE TABLE answers (id integer primary key, solution int, ordering int, src int, dest int, description text, verification int DEFAULT 0, delay int DEFAULT 0)''')
 	db().execute('''CREATE UNIQUE INDEX answers_unique ON answers(solution,src,dest)''')
-	db().execute('''CREATE TABLE progress (id integer primary key, solution int, ordering int, action int, src int, dest int, description text, verification int DEFAULT 0)''')
+	db().execute('''CREATE TABLE progress (id integer primary key, solution int, ordering int, action int, src int, dest int, description text)''')
 	db().execute('''CREATE UNIQUE INDEX progress_unique ON progress(solution,ordering)''')
 
 def addTopic(name):
@@ -104,18 +106,56 @@ def addAnswer(solution, ordering, src, dest, desc):
 	with db():
 		cursor().execute("INSERT OR IGNORE INTO answers (solution,ordering,src,dest,description) VALUES (?,?,?,?,?)", (solution,ordering,src,dest,desc))
 
+def getAnswer(id):
+	return cursor().execute("""
+SELECT
+	answers.id AS id,
+	src AS srcid,
+	srcnode.name AS src,
+	dest AS destid,
+	destnode.name AS dest,
+	description,
+	answers.verification
+FROM answers
+INNER JOIN solutions ON (answers.solution = solutions.id)
+LEFT JOIN nodes AS srcnode ON (answers.src = srcnode.id)
+LEFT JOIN nodes AS destnode ON (answers.dest = destnode.id)
+WHERE answers.id = ?
+	""", (id,)).fetchone()
+
 def addProgress(solution, ordering, action, src, dest, desc):
 	actionmap = {"create": 0, "rename": 1, "remove": 2}
 	action = actionmap[action]
 	with db():
 		cursor().execute("INSERT OR IGNORE INTO progress (solution,ordering,action,src,dest,description) VALUES (?,?,?,?,?,?)", (solution,ordering,action,src,dest,desc))
 
-def unverifiedAnswers(topic):
-	return cursor().execute("SELECT * from answers WHERE verification = 0").fetchall()
+def unverifiedAnswers(topic, limit = 10):
+	return cursor().execute("""
+SELECT
+	answers.id AS id,
+	src AS srcid,
+	srcnode.name AS src,
+	dest AS destid,
+	destnode.name AS dest,
+	description,
+	answers.verification,
+	answers.delay
+FROM answers
+INNER JOIN solutions ON (answers.solution = solutions.id)
+LEFT JOIN nodes AS srcnode ON (answers.src = srcnode.id)
+LEFT JOIN nodes AS destnode ON (answers.dest = destnode.id)
+WHERE solutions.topic = ? AND answers.verification & 1 = 0
+ORDER BY delay ASC
+LIMIT ?
+	""", (topic,limit)).fetchall()
+
+def delayAnswer(id):
+	with db():
+		cursor().execute("UPDATE answers SET delay = delay + 1 WHERE id = ?", (id,))
 
 def searchVerificationMatch(topic, src, dest, desc):
 	with db():
-		return cursor().execute("SELECT * FROM answers INNER JOIN solutions ON (answers.solution = solutions.id) WHERE verification!=0 AND topic=? AND src=? AND dest=? AND description LIKE ? GROUP BY description", (topic,src,dest,desc)).fetchall()
+		return cursor().execute("SELECT * FROM answers INNER JOIN solutions ON (answers.solution = solutions.id) WHERE verification & 1 = 1 AND topic=? AND src=? AND dest=? AND description LIKE ? GROUP BY description", (topic,src,dest,desc)).fetchall()
 
 def packVerification(args):
 	flag = 0
@@ -134,12 +174,30 @@ def unpackVerification(flag):
 		flag //= 2
 	return res
 
+def unpackVerificationIcons(flag):
+	res = []
+	for i in range(len(VERIFICATION_FLAGS)):
+		res.append([VERIFICATION_FLAGS[i], VERIFICATION_ICONS[i][flag % 2]])
+		flag //= 2
+	return res
+
 def getVerificationMap():
 	return {2**i: VERIFICATION_FLAGS[i] for i in range(len(VERIFICATION_FLAGS))}
+
+def getVerificationFromMap(map):
+	return functools.reduce(
+		lambda x,y: x | y,
+		[2**id if map.get("verification_%d" % 2**id, 0) == "on" else 0 for id in range(len(VERIFICATION_FLAGS))],
+		0
+	)
+
+def getVerifications():
+	return [{"id": 2**i, "name": VERIFICATION_FLAGS[i], "icon": VERIFICATION_ICONS[i]} for i in range(len(VERIFICATION_FLAGS))]
 
 def listVerifications():
 	return VERIFICATION_FLAGS[1:]
 
 def setVerification(answer, flag):
+	print("Setting to %d" % flag)
 	with db():
 		cursor().execute("UPDATE answers SET verification=? WHERE id=?", (flag,answer))

@@ -24,4 +24,18 @@
 		</div>
 	</div>
 </div>
+<div class="row">
+	<div class="col-md-6">
+		<div class="panel panel-default">
+			<div class="panel-heading"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Learn new results</div>
+			<div class="panel-body">
+				<div class="btn-group-vertical" role="group">
+				{% for name,desc in topics()|dictsort %}
+					<a href="/learn/{{ name }}" class="btn btn-default" class="btn btn-default">{{ desc }}</a>
+				{% endfor %}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 {% endblock %}

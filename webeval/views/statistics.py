@@ -1,25 +1,6 @@
 from flask import redirect, render_template, request
 from webeval import app, database, stats
 
-import functools
-
-@app.context_processor
-def inject_default_values():
-	return {
-		"topic": request.form.get('topic', ''),
-		"medium": request.form.get('medium', ''),
-		"timing": request.form.get('timing', ''),
-		"verification": functools.reduce(
-			lambda x,y: x | y,
-			[id if request.form.get("verification_%d" % id, 0) == "on" else 0 for id in database.getVerificationMap()],
-			0
-		),
-		"topics": database.listTopicDict,
-		"verificationMap": database.getVerificationMap,
-		"isSet": lambda single, value: (single & value) == single
-	}
-
-
 @app.route("/statistics/nodeusage", methods=["GET", "POST"])
 def stats_nodeusage():
 	kwargs = {}

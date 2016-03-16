@@ -11,7 +11,7 @@ def openPage():
 	time.sleep(1)
 	webbrowser.open("http://%s:%d" % (host,port))
 t = threading.Thread(target = openPage)
-t.start()
+#t.start()
 
 from webeval import app
 app.run(host = host, port = port, debug=True)

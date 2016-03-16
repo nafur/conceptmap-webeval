@@ -27,13 +27,13 @@
 
 {% macro input_verification(label, default) -%}
 <div class="row">
-{% for id,name in verificationMap()|dictsort %}
+{% for v in verifications() %}
 	<div class="col-md-2">
 		<label class="checkbox-inline">
-		{% if isSet(id,default) %}
-			<input type="checkbox" name="verification_{{ id }}" checked="checked" /> {{ name }}
+		{% if isSet(v.id,default) %}
+			<input type="checkbox" name="verification_{{ v.id }}" checked="checked" /> {{ v.name }}
 		{% else %}
-			<input type="checkbox" name="verification_{{ id }}" /> {{ name }}
+			<input type="checkbox" name="verification_{{ v.id }}" /> {{ v.name }}
 		{% endif %}
 		</label>
 	</div>

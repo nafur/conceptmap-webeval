@@ -1,0 +1,46 @@
+{% extends 'master.html' %}
+{% block style %}
+td.last,th.last {
+	width: 1px;
+	white-space: nowrap;
+}
+{% endblock %}
+{% block content %}
+<div class="panel panel-primary">
+	<div class="panel-heading"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Learn new results for <strong>{{ topic.name }}</strong></div>
+	<div class="panel-body">
+		<table class="table table-striped table-bordered">
+			<thead>
+				<th>Source</th>
+				<th>Description</th>
+				<th>Destination</th>
+				<th class="last">Status</th>
+				<th></th>
+			</thead>
+			<tbody>
+			{% for c in candidates %}
+				<tr>
+					<td>{{ c.src }}</td>
+					<td>{{ c.description }}</td>
+					<td>{{ c.dest }}</td>
+					<td class="last">
+						{% for v in c.verification %}
+						<span class="glyphicon glyphicon-{{ v.1 }}" aria-hidden="true" title="{{ v.0 }}"></span>
+						{% endfor %}
+						{% if c.delay %}
+						<span class="badge" title="delay: {{ c.delay }}">{{ c.delay }}</span>
+						{% endif %}
+					</td>
+					<td class="last">
+						<a href="/learn/{{ topic.id }}/{{ c.id }}"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> edit</a>
+						<a href="/learn/delay/{{ topic.id }}/{{ c.id }}"><span class="glyphicon glyphicon-new-window" aria-hidden="true"></span> delay</a>
+					</td>
+				</tr>
+
+
+			{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
+{% endblock %}

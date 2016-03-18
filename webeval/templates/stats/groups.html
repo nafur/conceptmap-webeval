@@ -1,0 +1,26 @@
+{% extends 'master.html' %}
+{% block content %}
+<div class="panel panel-primary">
+	<div class="panel-heading">Basic overview over groups</div>
+	<div class="panel-body">
+		<ul class="list-group">
+		{% for g,s in groups|dictsort %}
+			<li class="list-group-item">
+				{{ g }}: {{ s.all|map(attribute='name')|join(', ') }}
+				<span class="badge pull-right">{{ s.all|length }}</span>
+			{% if s.status == "success" %}
+				<span class="badge alert-success pull-right">ok</span>
+			{% elif s.status == "error" %}
+				<span class="badge alert-danger pull-right">error</span>
+			{% endif %}
+				<ul class="list-group">
+					{% for name,studs in s.sub|dictsort %}
+					<li class="list-group-item">{{ name }}: {{ studs|map(attribute='name')|join(', ') }} <span class="badge pull-right">{{ studs|length }}</span></li>
+					{% endfor %}
+				</ul>
+			</li>
+		{% endfor %}
+		</ul>
+	</div>
+</div>
+{% endblock %}

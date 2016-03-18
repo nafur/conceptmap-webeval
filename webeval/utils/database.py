@@ -11,10 +11,10 @@ VERIFICATION_ICONS = [["remove","ok"],["remove","ok"],["remove","ok"],["remove",
 def createTables():
 	db().execute('''CREATE TABLE topics (id integer primary key, name text)''')
 	db().execute('''CREATE TABLE nodes (id integer primary key, topic int, name text)''')
-	db().execute('''CREATE TABLE students (id integer primary key, medium text, name text)''')
+	db().execute('''CREATE TABLE students (id integer primary key, name text, medium text, class text)''')
 	db().execute('''CREATE TABLE solutions (id integer primary key, student int, ordering int, topic int, timing int)''')
 	db().execute('''CREATE TABLE answers (id integer primary key, solution int, ordering int, src int, dest int, description text, verification int DEFAULT 0, delay int DEFAULT 0)''')
-	db().execute('''CREATE UNIQUE INDEX answers_unique ON answers(solution,src,dest)''')
+	#db().execute('''CREATE UNIQUE INDEX answers_unique ON answers(solution,src,dest)''')
 	db().execute('''CREATE TABLE progress (id integer primary key, solution int, ordering int, action int, src int, dest int, description text)''')
 	db().execute('''CREATE UNIQUE INDEX progress_unique ON progress(solution,ordering)''')
 
@@ -60,21 +60,30 @@ def listTopicDict():
 	list = cursor().execute("SELECT * FROM topics ORDER BY name").fetchall()
 	return {t["id"]: t["name"] for t in list}
 
-def addStudent(medium, name):
+def listGroups():
+	return cursor().execute("SELECT DISTINCT students.class FROM students").fetchall()
+def listMediums():
+	return cursor().execute("SELECT DISTINCT students.medium FROM students").fetchall()
+
+def addStudent(name, medium, group):
 	c = cursor()
-	c.execute("SELECT id FROM students WHERE medium=? AND name LIKE ?", (medium,name))
+	c.execute("SELECT id FROM students WHERE medium=? AND class=? AND name LIKE ?", (medium,group,name))
 	res = c.fetchone()
 	if res != None:
 		return res[0]
 	with db():
-		c.execute("INSERT INTO students (medium,name) VALUES (?,?)", (medium,name))
+		c.execute("INSERT INTO students (name,medium,class) VALUES (?,?,?)", (name,medium,group))
 	return c.lastrowid
 
 def getStudent(id):
 	return cursor().execute("SELECT * FROM students WHERE id=?", (id,)).fetchone()
 
-def listStudents(topic):
-	return cursor().execute("SELECT DISTINCT students.* FROM students INNER JOIN solutions ON (students.id = solutions.student) WHERE topic=?", (topic,)).fetchall()
+def listStudents():
+	return cursor().execute("SELECT DISTINCT students.* FROM students ORDER BY name").fetchall()
+def listStudentsByGroup(group):
+	return cursor().execute("SELECT DISTINCT students.* FROM students WHERE class=? ORDER BY name", (group,)).fetchall()
+def listStudentsByFilter(group, medium, topic):
+	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) LEFT JOIN topics ON (solutions.topic = topics.id) WHERE class=? AND medium=? AND topics.name=? GROUP BY students.id ORDER BY name", (group,medium,topic)).fetchall()
 
 def countStudents(topic):
 	return len(listStudents(topic))

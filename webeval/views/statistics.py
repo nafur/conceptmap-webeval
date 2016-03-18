@@ -21,3 +21,18 @@ def stats_edgeusage():
 		#plot = stats.collectNodeUsagePlot(topic, core, timing = request.form.get('timing', ''), medium = request.form.get('medium', ''))
 		#kwargs.update({"plot": plot})
 	return render_template("stats/edgeusage.html", **kwargs)
+
+@app.route("/statistics/groups", methods=["GET", "POST"])
+def stats_groups():
+	groups = {}
+	for g in database.listGroups():
+		cur = {}
+		status = "success"
+		for t in map(lambda t: t["name"], database.listTopics()):
+			for m in map(lambda m: m["medium"], database.listMediums()):
+				r = database.listStudentsByFilter(g["class"],m,t)
+				if len(r) > 0: cur["%s / %s" % (t,m)] = r
+		if len(cur) > 2: status = "error"
+		groups[g["class"]] = { "all": database.listStudentsByGroup(g["class"]), "sub": cur, "status": status}
+
+	return render_template("stats/groups.html", groups = groups)

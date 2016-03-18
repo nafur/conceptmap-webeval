@@ -13,6 +13,10 @@ def db():
 	if db is None:
 		db = g._database = sqlite3.connect(DBFILE)
 		db.row_factory = sqlite3.Row
+		cursor = db.cursor()
+		cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+		if cursor.fetchall() == []:
+			reset(False)
 	return db
 
 def close():
@@ -23,8 +27,8 @@ def close():
 def cursor():
 	return db().cursor()
 
-def reset():
-	if os.path.isfile(DBFILE):
+def reset(removeOldDatabase = True):
+	if removeOldDatabase and os.path.isfile(DBFILE):
 		os.unlink(DBFILE)
 	db().execute('''CREATE TABLE topics (id integer primary key, name text)''')
 	db().execute('''CREATE TABLE nodes (id integer primary key, topic int, name text)''')

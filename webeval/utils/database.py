@@ -82,11 +82,16 @@ def listStudents():
 	return cursor().execute("SELECT DISTINCT students.* FROM students ORDER BY name").fetchall()
 def listStudentsByGroup(group):
 	return cursor().execute("SELECT DISTINCT students.* FROM students WHERE class=? ORDER BY name", (group,)).fetchall()
+def listStudentsByTopic(topic):
+	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) LEFT JOIN topics ON (solutions.topic = topics.id) WHERE topics.name=? GROUP BY students.id ORDER BY name", (topic,)).fetchall()
 def listStudentsByFilter(group, medium, topic):
 	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) LEFT JOIN topics ON (solutions.topic = topics.id) WHERE class=? AND medium=? AND topics.name=? GROUP BY students.id ORDER BY name", (group,medium,topic)).fetchall()
 
-def countStudents(topic):
-	return len(listStudents(topic))
+def countStudents(topic = None):
+	if topic == None:
+		return len(listStudents())
+	else:
+		return len(listStudentsByTopic(topic))
 
 def addSolution(student, ordering, topic, timing):
 	c = cursor()

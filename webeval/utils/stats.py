@@ -78,7 +78,7 @@ ORDER BY c1 desc
 	res = list(map(lambda r: [r[0], [r[1]]], res))
 	return plot.barplot("nodeusage-%s-%s-%s.png" % (timing,medium,verification), res)
 
-def collectEdgeUsedCounts(topic, timing = None, medium = None, verification = None):
+def collectEdgeUsedCounts(topic, timing = "", medium = "", verification = ""):
 	core = gatherCoreData(topic)
 	nodes = database.listNodes(topic)
 	nm = {}
@@ -91,7 +91,7 @@ INNER JOIN answers ON (n1.id = answers.src AND n2.id = answers.dest)
 LEFT JOIN solutions ON (answers.solution = solutions.id)
 LEFT JOIN students ON (solutions.student = students.id)
 WHERE n1.topic = ? AND n2.topic = ? AND (timing=? OR %d) AND (medium=? OR %d) AND (verification = ? OR %d)
-""" % (timing == None, medium == None, verification == None), (topic,topic,timing,medium,verification)).fetchall()
+""" % (timing == "", medium == "", verification == ""), (topic,topic,timing,medium,verification)).fetchall()
 	table = [([0] * len(nodes)) for n in nodes]
 	for row in res:
 		table[nm[row[0]]][nm[row[1]]] += 1

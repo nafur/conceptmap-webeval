@@ -123,3 +123,11 @@
 	{% endif %}
 {% endif %}
 {%- endmacro %}
+
+{% macro show_core_stats(topic) %}
+<ul class="list-inline">
+	{% for key,val in core_stats(topic)|dictsort %}
+	<li>{{ key }} <span class="badge">{{ val }}</span></li>
+	{% endfor %}
+</ul>
+{% endmacro %}

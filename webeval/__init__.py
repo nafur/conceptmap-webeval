@@ -16,6 +16,7 @@ def inject_default_values():
 		"verification": database.getVerificationFromMap(request.form),
 		"topics": database.listTopicDict,
 		"verifications": database.getVerifications,
+		"core_stats": stats.gatherCoreData,
 		"isSet": lambda single, value: (single & value) == single
 	}
 

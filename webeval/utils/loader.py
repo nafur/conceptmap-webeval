@@ -6,14 +6,18 @@ import re
 from webeval.utils import database
 
 FILE_PATTERN = {
-	"default": ".*/?(?P<timing>(Vorher|Nachher))/.*_(?P<medium>(Video|Text))_(?P<ordering>[0-9]+)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv"
+	"default": ".*/?(?P<timing>(Vorher|Nachher))/.*_(?P<group>[^_]*)_(?P<medium>(Video|Text))_(?P<ordering>[0-9]+)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv"
 }
 
+def canonicalizeTopic(topic):
+	topic = re.sub(r'\s*[-_]\s*', ' - ', topic)
+	return topic
+
 def parseFilename(filename, pattern):
-	res = re.match(FILE_PATTERN[pattern], filename)
+	res = re.match(FILE_PATTERN[pattern], filename.replace("\\","/"))
 	if res != None:
-		topic = database.addTopic(res.group("topic"))
-		student = database.addStudent(res.group("medium"), res.group("student"))
+		topic = database.addTopic(canonicalizeTopic(res.group("topic")))
+		student = database.addStudent(res.group("student").upper(), res.group("medium"), res.group("group"))
 		solution = database.addSolution(student, res.group("ordering"), topic, res.group("timing"))
 		return (topic,student,solution)
 	return None
@@ -33,6 +37,30 @@ class NodeMap:
 		id = database.addNode(self._topic,name)
 		self._m[name] = id
 		return id
+
+def error_DisconnectedTwice(cur, last):
+	if cur["Action"] != "Disconnecting": return False
+	if last["Action"] != "Disconnecting": return False
+	if cur["Source"] != last["Source"]: return False
+	if cur["Destination"] != last["Destination"]: return False
+	return True
+def error_RenameAfterDisconnect(cur, last):
+	if cur["Action"] != "Renaming": return False
+	if last["Action"] != "Disconnecting": return False
+	if cur["Source"] != last["Source"]: return False
+	if cur["Destination"] != last["Destination"]: return False
+	return True
+
+def fixTrivialErrors(rows):
+	res = []
+	for i in range(len(rows)):
+		if i == 0:
+			res.append(rows[0])
+			continue
+		if error_DisconnectedTwice(rows[i],rows[i-1]): continue
+		if error_RenameAfterDisconnect(rows[i],rows[i-1]): continue
+		res.append(rows[i])
+	return res
 
 def loadAnswerSet(path, pattern = "default"):
 	res = [[],[]]
@@ -57,30 +85,27 @@ def loadAnswerSet(path, pattern = "default"):
 		n = 1
 		nm = NodeMap(topic)
 		data = {}
-		for row in history:
+		for row in fixTrivialErrors(history):
 			src = nm.get(row["Source"])
 			dst = nm.get(row["Destination"])
 			if row["Action"] == "Connecting":
-				if (src,dst) in data:
-					failed.append(file)
-					continue
 				database.addProgress(solution, n, "create", src, dst, "")
-				data[(src,dst)] = (n, "")
+				if (src,dst) not in data: data[(src,dst)] = []
+				data[(src,dst)].append((n, ""))
 			elif row["Action"] == "Renaming":
-				if not (src,dst) in data:
-					failed.append(file)
-					continue
+				if not (src,dst) in data: continue
 				database.addProgress(solution, n, "rename", src, dst, row["to"])
-				data[(src,dst)] = (n, row["to"])
+				data[(src,dst)] = list(map(lambda s: (n,row["to"]) if s[1]==row["from"] else s, data[(src,dst)]))
 			elif row["Action"] == "Disconnecting":
-				if not (src,dst) in data:
-					failed.append(file)
-					continue
+				if not (src,dst) in data: continue
 				database.addProgress(solution, n, "remove", src, dst, "")
+				if len(data[(src,dst)]) > 1:
+					failed.append("%s (%s, %s -> %s)" % (file,"Removed duplicate connection",row["Source"],row["Destination"]))
+					continue
 				del data[(src,dst)]
 			n += 1
 		for d in data:
-			ordering,desc = data[d]
-			database.addAnswer(solution, ordering, d[0], d[1], desc)
-		success.append(file)
-	return (res,success,failed)
+			for a in data[d]:
+				ordering,desc = a
+				database.addAnswer(solution, ordering, d[0], d[1], desc)
+	return (res,failed)

@@ -62,6 +62,12 @@ def listTopicDict():
 
 def listGroups():
 	return cursor().execute("SELECT DISTINCT students.class FROM students").fetchall()
+def listGroupDict():
+	list = cursor().execute("SELECT DISTINCT students.class FROM students").fetchall()
+	res = {g["class"]: g["class"] for g in list}
+	res[""] = "All groups"
+	return res
+
 def listMediums():
 	return cursor().execute("SELECT DISTINCT students.medium FROM students").fetchall()
 
@@ -204,10 +210,10 @@ def unpackVerificationIcons(flag):
 def getVerificationMap():
 	return {2**i: VERIFICATION_FLAGS[i] for i in range(len(VERIFICATION_FLAGS))}
 
-def getVerificationFromMap(map):
+def getVerificationFromMap(prefix, map):
 	return functools.reduce(
 		lambda x,y: x | y,
-		[2**id if map.get("verification_%d" % 2**id, 0) == "on" else 0 for id in range(len(VERIFICATION_FLAGS))],
+		[2**id if map.get("verification_%s_%d" % (prefix,2**id), 0) == "on" else 0 for id in range(len(VERIFICATION_FLAGS))],
 		0
 	)
 

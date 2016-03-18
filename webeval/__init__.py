@@ -13,8 +13,11 @@ def inject_default_values():
 		"topic": request.form.get('topic', ''),
 		"medium": request.form.get('medium', ''),
 		"timing": request.form.get('timing', ''),
-		"verification": database.getVerificationFromMap(request.form),
+		"group": request.form.get('group', ''),
+		"verification_require": database.getVerificationFromMap("require", request.form),
+		"verification_exclude": database.getVerificationFromMap("exclude", request.form),
 		"topics": database.listTopicDict,
+		"groups": database.listGroupDict,
 		"verifications": database.getVerifications,
 		"core_stats": stats.gatherCoreData,
 		"isSet": lambda single, value: (single & value) == single

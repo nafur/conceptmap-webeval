@@ -25,15 +25,20 @@
 {{ input_dropdown(name, label, {"": "Vorher und Nachher", "Vorher": "Vorher", "Nachher": "Nachher"}, default)}}
 {%- endmacro %}
 
-{% macro input_verification(label, default) -%}
+{% macro input_group(name, label, groups, default) -%}
+{{ input_dropdown(name, label, groups, default)}}
+{%- endmacro %}
+
+{% macro input_verification(label, prefix, default) -%}
 <div class="row">
+	<div class="col-md-1"><label>{{ label }}:</label></div>
 {% for v in verifications() %}
 	<div class="col-md-2">
 		<label class="checkbox-inline">
 		{% if isSet(v.id,default) %}
-			<input type="checkbox" name="verification_{{ v.id }}" checked="checked" /> {{ v.name }}
+			<input type="checkbox" name="verification_{{ prefix }}_{{ v.id }}" checked="checked" /> {{ v.name }}
 		{% else %}
-			<input type="checkbox" name="verification_{{ v.id }}" /> {{ v.name }}
+			<input type="checkbox" name="verification_{{ prefix }}_{{ v.id }}" /> {{ v.name }}
 		{% endif %}
 		</label>
 	</div>
@@ -46,14 +51,18 @@
 	<div class="col-md-4">
 		{{ input_topic("topic", "Topic", topics(), topic) }}
 	</div>
-	<div class="col-md-4">
+	<div class="col-md-3">
 		{{ input_medium("medium", "Medium", medium) }}
 	</div>
-	<div class="col-md-4">
+	<div class="col-md-3">
 		{{ input_timing("timing", "Timing", timing) }}
 	</div>
+	<div class="col-md-2">
+		{{ input_group("group", "Group", groups(), group) }}
+	</div>
 </div>
-{{ input_verification("Verification", verification) }}
+{{ input_verification("Required", "require", verification_require) }}
+{{ input_verification("Excluded", "exclude", verification_exclude) }}
 {%- endmacro %}
 
 {% macro listing(head,body,foot) -%}

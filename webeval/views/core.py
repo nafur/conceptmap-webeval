@@ -43,5 +43,5 @@ def browseFiles(path):
 @app.route("/admin/import/<path:path>")
 def importFiles(path):
 	abs_path = os.path.join(os.path.expanduser("~"), path)
-	res = loader.loadAnswerSet(abs_path)
-	return render_template("admin/import_done.html", messages = res[0], files = res[1])
+	res,success,failed = loader.loadAnswerSet(abs_path)
+	return render_template("admin/import_done.html", messages = res[0], files = res[1], success = success, failed = failed)

@@ -8,6 +8,16 @@ DBFILE = "db.sqlite"
 VERIFICATION_FLAGS = ["fully verified", "formally correct", "content-wise correct", "structurally correct", "functionally correct"]
 VERIFICATION_ICONS = [["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"]]
 
+def createTables():
+	db().execute('''CREATE TABLE topics (id integer primary key, name text)''')
+	db().execute('''CREATE TABLE nodes (id integer primary key, topic int, name text)''')
+	db().execute('''CREATE TABLE students (id integer primary key, medium text, name text)''')
+	db().execute('''CREATE TABLE solutions (id integer primary key, student int, ordering int, topic int, timing int)''')
+	db().execute('''CREATE TABLE answers (id integer primary key, solution int, ordering int, src int, dest int, description text, verification int DEFAULT 0, delay int DEFAULT 0)''')
+	db().execute('''CREATE UNIQUE INDEX answers_unique ON answers(solution,src,dest)''')
+	db().execute('''CREATE TABLE progress (id integer primary key, solution int, ordering int, action int, src int, dest int, description text)''')
+	db().execute('''CREATE UNIQUE INDEX progress_unique ON progress(solution,ordering)''')
+
 def db():
 	db = getattr(g, '_database', None)
 	if db is None:
@@ -16,7 +26,7 @@ def db():
 		cursor = db.cursor()
 		cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
 		if cursor.fetchall() == []:
-			reset(False)
+			createTables()
 	return db
 
 def close():
@@ -27,17 +37,9 @@ def close():
 def cursor():
 	return db().cursor()
 
-def reset(removeOldDatabase = True):
-	if removeOldDatabase and os.path.isfile(DBFILE):
+def reset():
+	if os.path.isfile(DBFILE):
 		os.unlink(DBFILE)
-	db().execute('''CREATE TABLE topics (id integer primary key, name text)''')
-	db().execute('''CREATE TABLE nodes (id integer primary key, topic int, name text)''')
-	db().execute('''CREATE TABLE students (id integer primary key, medium text, name text)''')
-	db().execute('''CREATE TABLE solutions (id integer primary key, student int, ordering int, topic int, timing int)''')
-	db().execute('''CREATE TABLE answers (id integer primary key, solution int, ordering int, src int, dest int, description text, verification int DEFAULT 0, delay int DEFAULT 0)''')
-	db().execute('''CREATE UNIQUE INDEX answers_unique ON answers(solution,src,dest)''')
-	db().execute('''CREATE TABLE progress (id integer primary key, solution int, ordering int, action int, src int, dest int, description text)''')
-	db().execute('''CREATE UNIQUE INDEX progress_unique ON progress(solution,ordering)''')
 
 def addTopic(name):
 	c = cursor()

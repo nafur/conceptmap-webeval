@@ -44,6 +44,8 @@ def loadAnswerSet(path, pattern = "default"):
 		res[0].append("\"" + path + "\" is neither a file nor a folder. We assume that it is a file pattern...")
 		files = glob.glob(path)
 
+	success = []
+	failed = []
 	for file in files:
 		res[1].append(file)
 		match = parseFilename(file, pattern)
@@ -59,16 +61,26 @@ def loadAnswerSet(path, pattern = "default"):
 			src = nm.get(row["Source"])
 			dst = nm.get(row["Destination"])
 			if row["Action"] == "Connecting":
+				if (src,dst) in data:
+					failed.append(file)
+					continue
 				database.addProgress(solution, n, "create", src, dst, "")
 				data[(src,dst)] = (n, "")
 			elif row["Action"] == "Renaming":
+				if not (src,dst) in data:
+					failed.append(file)
+					continue
 				database.addProgress(solution, n, "rename", src, dst, row["to"])
 				data[(src,dst)] = (n, row["to"])
 			elif row["Action"] == "Disconnecting":
+				if not (src,dst) in data:
+					failed.append(file)
+					continue
 				database.addProgress(solution, n, "remove", src, dst, "")
 				del data[(src,dst)]
 			n += 1
 		for d in data:
 			ordering,desc = data[d]
 			database.addAnswer(solution, ordering, d[0], d[1], desc)
-	return res
+		success.append(file)
+	return (res,success,failed)

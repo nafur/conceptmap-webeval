@@ -13,6 +13,19 @@
 		{% endfor %}
 		</ul>
 
+		Success:
+		<ol>
+		{% for f in success %}
+			<li>{{ f }}</li>
+		{% endfor %}
+		</ol>
+		Failed:
+		<ol>
+		{% for f in failed %}
+			<li>{{ f }}</li>
+		{% endfor %}
+		</ol>
+
 		<a href="/admin/browse" class="btn btn-default">Return to file selection</a>
 		<a href="/" class="btn btn-default">Return to home</a>
 	</div>

@@ -2,29 +2,32 @@ from flask import redirect, render_template, request
 from webeval import app, database, stats
 
 def getFilterSettings(form):
-	topic = form.get('topic', '')
-	medium = form.get('medium', '')
-	timing = form.get('timing', '')
-	ver_req = database.getVerificationFromMap("require", form)
-	ver_exc = database.getVerificationFromMap("exclude", form)
-	return topic,medium,timing,ver_req,ver_exc
+	r = {}
+	r["topic"] = form.get('topic', '')
+	r["medium"] = form.get('medium', '')
+	r["timing"] = form.get('timing', '')
+	r["ordering"] = form.get('ordering', '')
+	r["group"] = form.get('group', '')
+	r["verification_require"] = database.getVerificationFromMap("require", form)
+	r["verification_exclude"] = database.getVerificationFromMap("exclude", form)
+	return r
 
 @app.route("/statistics/nodeusage", methods=["GET", "POST"])
 def stats_nodeusage():
 	kwargs = {}
 	if request.method == "POST":
-		topic,medium,timing,ver_req,ver_exc = getFilterSettings(request.form)
-		head,body,foot = stats.collectNodeUsedCounts(topic, timing = request.form.get('timing', ''), medium = request.form.get('medium', ''))
-		plot = stats.collectNodeUsagePlot(topic, timing = request.form.get('timing', ''), medium = request.form.get('medium', ''))
-		kwargs = {"head": head, "body": body, "foot": foot, "plot": plot}
+		kwargs = getFilterSettings(request.form)
+		head,body,foot = stats.collectNodeUsedCounts(**kwargs)
+		plot = stats.collectNodeUsagePlot(**kwargs)
+		kwargs.update({"head": head, "body": body, "foot": foot, "plot": plot})
 	return render_template("stats/nodeusage.html", **kwargs)
 
 @app.route("/statistics/edgeusage", methods=["GET", "POST"])
 def stats_edgeusage():
 	kwargs = {}
 	if request.method == "POST":
-		topic,medium,timing,ver_req,ver_exc = getFilterSettings(request.form)
-		cols,rows,body = stats.collectEdgeUsedCounts(topic, timing = request.form.get('timing', ''), medium = request.form.get('medium', ''))
+		kwargs = getFilterSettings(request.form)
+		cols,rows,body = stats.collectEdgeUsedCounts(**kwargs)
 		kwargs.update({"cols": cols, "rows": rows, "body": body})
 		#plot = stats.collectNodeUsagePlot(topic, core, timing = request.form.get('timing', ''), medium = request.form.get('medium', ''))
 		#kwargs.update({"plot": plot})

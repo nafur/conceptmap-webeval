@@ -128,6 +128,11 @@ def listNodes(topic):
 def countNodes(topic):
 	return len(listNodes(topic))
 
+def listOrderingDict(topic):
+	d = {str(c["ordering"]): str(c["ordering"]) for c in cursor().execute("SELECT DISTINCT ordering FROM solutions WHERE topic=? ORDER BY ordering", (topic,)).fetchall()}
+	d[""] = "All"
+	return d
+
 def addAnswer(solution, ordering, src, dest, desc):
 	with db():
 		cursor().execute("INSERT OR IGNORE INTO answers (solution,ordering,src,dest,description) VALUES (?,?,?,?,?)", (solution,ordering,src,dest,desc))

@@ -29,7 +29,7 @@ def printUsages(data, desc, key, str):
 def gatherCoreData(topic):
 	return {"students": database.countStudents(topic)}
 
-def collectNodeUsedCounts(topic, timing = "", medium = "", verification = ""):
+def collectNodeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
 	core = gatherCoreData(topic)
 	res = database.cursor().execute("""
 SELECT
@@ -40,10 +40,10 @@ FROM nodes
 LEFT JOIN answers ON (nodes.id = answers.src OR nodes.id = answers.dest)
 LEFT JOIN solutions ON (answers.solution = solutions.id)
 LEFT JOIN students ON (solutions.student = students.id)
-WHERE solutions.topic=? AND (timing=? OR %d) AND (medium=? OR %d) AND (verification=? OR %d)
+WHERE solutions.topic=? AND (timing=? OR %d) AND (medium=? OR %d) AND (solutions.ordering=? OR %d) AND (class=? OR %d) AND (verification=? OR %d)
 GROUP BY nodes.id
 ORDER BY c1 desc
-""" % (timing == "", medium == "", verification == ""), (topic,timing,medium,verification)).fetchall()
+""" % (timing == "", medium == "", ordering == "", group == "", verification_require == ""), (topic,timing,medium,ordering,group,verification_require)).fetchall()
 	listing = list(map(lambda r: [
 			r[0],
 			"%s (%0.2f%%)" % (r[1], r[1]*100 / core["students"]),
@@ -61,7 +61,7 @@ ORDER BY c1 desc
 		"Used in n connections"
 	], listing, foot)
 
-def collectNodeUsagePlot(topic, timing = "", medium = "", verification = ""):
+def collectNodeUsagePlot(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
 	core = gatherCoreData(topic)
 	res = database.cursor().execute("""
 SELECT
@@ -74,11 +74,11 @@ LEFT JOIN students ON (solutions.student = students.id)
 WHERE solutions.topic=? AND (timing=? OR %d) AND (medium=? OR %d) AND (verification = ? OR %d)
 GROUP BY nodes.id
 ORDER BY c1 desc
-""" % (timing == "", medium == "", verification == ""), (topic,timing,medium,verification)).fetchall()
+""" % (timing == "", medium == "", verification_require == ""), (topic,timing,medium,verification_require)).fetchall()
 	res = list(map(lambda r: [r[0], [r[1]]], res))
-	return plot.barplot("nodeusage-%s-%s-%s.png" % (timing,medium,verification), res)
+	return plot.barplot("nodeusage-%s-%s-%s.png" % (timing,medium,verification_require), res)
 
-def collectEdgeUsedCounts(topic, timing = "", medium = "", verification = ""):
+def collectEdgeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
 	core = gatherCoreData(topic)
 	nodes = database.listNodes(topic)
 	nm = {}
@@ -91,7 +91,7 @@ INNER JOIN answers ON (n1.id = answers.src AND n2.id = answers.dest)
 LEFT JOIN solutions ON (answers.solution = solutions.id)
 LEFT JOIN students ON (solutions.student = students.id)
 WHERE n1.topic = ? AND n2.topic = ? AND (timing=? OR %d) AND (medium=? OR %d) AND (verification = ? OR %d)
-""" % (timing == "", medium == "", verification == ""), (topic,topic,timing,medium,verification)).fetchall()
+""" % (timing == "", medium == "", verification_require == ""), (topic,topic,timing,medium,verification_require)).fetchall()
 	table = [([0] * len(nodes)) for n in nodes]
 	for row in res:
 		table[nm[row[0]]][nm[row[1]]] += 1

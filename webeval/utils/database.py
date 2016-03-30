@@ -89,7 +89,7 @@ def listStudents():
 def listStudentsByGroup(group):
 	return cursor().execute("SELECT DISTINCT students.* FROM students WHERE class=? ORDER BY name", (group,)).fetchall()
 def listStudentsByTopic(topic):
-	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) LEFT JOIN topics ON (solutions.topic = topics.id) WHERE topics.name=? GROUP BY students.id ORDER BY name", (topic,)).fetchall()
+	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) WHERE solutions.topic = ? GROUP BY students.id ORDER BY name", (topic,)).fetchall()
 def listStudentsByFilter(group, medium, topic):
 	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) LEFT JOIN topics ON (solutions.topic = topics.id) WHERE class=? AND medium=? AND topics.name=? GROUP BY students.id ORDER BY name", (group,medium,topic)).fetchall()
 

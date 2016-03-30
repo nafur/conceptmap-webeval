@@ -34,8 +34,8 @@ def collectNodeUsedCounts(topic, timing = "", medium = "", verification = ""):
 	res = database.cursor().execute("""
 SELECT
 	nodes.name,
-	COUNT(DISTINCT answers.solution) AS c1,
-	COUNT(*) AS c3
+	COUNT(DISTINCT students.id) AS c1,
+	COUNT(DISTINCT answers.id) AS c3
 FROM nodes
 LEFT JOIN answers ON (nodes.id = answers.src OR nodes.id = answers.dest)
 LEFT JOIN solutions ON (answers.solution = solutions.id)

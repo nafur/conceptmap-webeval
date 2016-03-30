@@ -93,15 +93,15 @@ def listStudentsByTopic(topic):
 def listStudentsByFilter(group, medium, topic):
 	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) WHERE class=? AND medium=? AND solutions.topic=? GROUP BY students.id ORDER BY name", (group,medium,topic)).fetchall()
 
-def countStudents(topic = None):
-	if topic == None:
+def countStudents(topic = ""):
+	if topic == "":
 		return len(listStudents())
 	else:
 		return len(listStudentsByTopic(topic))
 
 def addSolution(student, ordering, topic, timing):
 	c = cursor()
-	c.execute("SELECT id FROM solutions WHERE student=? AND topic=?", (student,topic))
+	c.execute("SELECT id FROM solutions WHERE student=? AND ordering=? AND topic=? AND timing=?", (student,ordering,topic,timing))
 	res = c.fetchone()
 	if res != None:
 		return res[0]

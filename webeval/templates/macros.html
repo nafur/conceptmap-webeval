@@ -29,6 +29,10 @@
 {{ input_dropdown(name, label, groups, default)}}
 {%- endmacro %}
 
+{% macro input_ordering(name, label, orderings, default) -%}
+{{ input_dropdown(name, label, orderings, default)}}
+{%- endmacro %}
+
 {% macro input_verification(label, prefix, default) -%}
 <div class="row">
 	<div class="col-md-1"><label>{{ label }}:</label></div>
@@ -51,11 +55,14 @@
 	<div class="col-md-4">
 		{{ input_topic("topic", "Topic", topics(), topic) }}
 	</div>
-	<div class="col-md-3">
+	<div class="col-md-2">
 		{{ input_medium("medium", "Medium", medium) }}
 	</div>
 	<div class="col-md-3">
 		{{ input_timing("timing", "Timing", timing) }}
+	</div>
+	<div class="col-md-1">
+		{{ input_ordering("ordering", "Number", orderings(topic), ordering) }}
 	</div>
 	<div class="col-md-2">
 		{{ input_group("group", "Group", groups(), group) }}
@@ -65,32 +72,37 @@
 {{ input_verification("Excluded", "exclude", verification_exclude) }}
 {%- endmacro %}
 
-{% macro listing(head,body,foot) -%}
-<table class="table table-striped table-condensed">
-	<thead>
-		{% for h in head -%}
-		<th>{{ h }}</th>
-		{% endfor %}
-	</thead>
-	<tbody>
-		{% for row in body -%}
-		<tr>
-			{% for item in row -%}
-			<td>{{ item }}</td>
-			{% endfor %}
-		</tr>
-		{% endfor %}
-	</tbody>
-	{% if foot %}
-	<tfoot>
-		<tr>
-			{% for item in foot -%}
-			<th>{{ item }}</th>
-			{% endfor %}
-		</tr>
-	</tfoot>
-	{% endif %}
-</table>
+{% macro listing(name,head,body,foot) -%}
+<div class="panel panel-info">
+	<div class="panel-heading">{{ name }}</div>
+	<div class="panel-body">
+		<table class="table table-striped table-condensed" style="margin-bottom: 0px;">
+			<thead>
+				{% for h in head -%}
+				<th>{{ h }}</th>
+				{% endfor %}
+			</thead>
+			<tbody>
+				{% for row in body -%}
+				<tr>
+					{% for item in row -%}
+					<td>{{ item }}</td>
+					{% endfor %}
+				</tr>
+				{% endfor %}
+			</tbody>
+			{% if foot %}
+			<tfoot>
+				<tr>
+					{% for item in foot -%}
+					<th>{{ item }}</th>
+					{% endfor %}
+				</tr>
+			</tfoot>
+			{% endif %}
+		</table>
+	</div>
+</div>
 {%- endmacro %}
 
 {% macro table(cols,rows,body) -%}
@@ -134,7 +146,7 @@
 {%- endmacro %}
 
 {% macro show_core_stats(topic) %}
-<ul class="list-inline">
+<ul class="list-inline" style="margin-bottom: 0px;">
 	{% for key,val in core_stats(topic)|dictsort %}
 	<li>{{ key }} <span class="badge">{{ val }}</span></li>
 	{% endfor %}

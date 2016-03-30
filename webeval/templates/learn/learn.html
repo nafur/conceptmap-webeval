@@ -25,7 +25,11 @@ td.last,th.last {
 					<td>{{ c.dest }}</td>
 					<td class="last">
 						{% for v in c.verification %}
-						<span class="glyphicon glyphicon-{{ v.1 }}" aria-hidden="true" title="{{ v.0 }}"></span>
+							{% if loop.first %}
+							<a href="/learn/{{ topic.id }}/{{ c.id }}"><span class="glyphicon glyphicon-{{ v.1 }}" aria-hidden="true" title="{{ v.0 }}"></span></a>
+							{% else %}
+							<a href="/learn/toggle/{{ topic.id }}/{{ c.id }}/{{ v.0 }}"><span class="glyphicon glyphicon-{{ v.1 }}" aria-hidden="true" title="{{ v.0 }}"></span></a>
+							{% endif %}
 						{% endfor %}
 						{% if c.delay %}
 						<span class="badge" title="delay: {{ c.delay }}">{{ c.delay }}</span>

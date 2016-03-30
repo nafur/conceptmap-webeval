@@ -15,7 +15,7 @@
 </div>
 
 {% if body %}
-{{ macros.table(cols,rows,body) }}
+{{ macros.table("Edge usage", cols,rows,body) }}
 {{ macros.show_plot("Edge usage", plot) }}
 {% endif %}
 {% endblock %}

@@ -105,25 +105,30 @@
 </div>
 {%- endmacro %}
 
-{% macro table(cols,rows,body) -%}
-<table class="table table-striped table-condensed">
-	<thead>
-		<th></th>
-		{% for h in cols %}
-			<th class="rotate"><div><span>{{ h }}</span></div></th>
-		{% endfor %}
-	</thead>
-	<tbody>
-		{% for row in body %}
-		<tr>
-			<th>{{ rows[loop.index0] }}</th>
-			{% for item in row %}
-			<td>{{ item }}</td>
-			{% endfor %}
-		</tr>
-		{% endfor %}
-	</tbody>
-</table>
+{% macro table(name,cols,rows,body) -%}
+<div class="panel panel-info">
+	<div class="panel-heading">{{ name }}</div>
+	<div class="panel-body">
+		<table class="table table-striped table-condensed">
+			<thead>
+				<th></th>
+				{% for h in cols %}
+					<th class="rotate"><div><span>{{ h }}</span></div></th>
+				{% endfor %}
+			</thead>
+			<tbody>
+				{% for row in body %}
+				<tr>
+					<th>{{ rows[loop.index0] }}</th>
+					{% for item in row %}
+					<td>{{ item }}</td>
+					{% endfor %}
+				</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
 {%- endmacro %}
 
 {% macro show_plot(name, filename) -%}

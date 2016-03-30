@@ -24,3 +24,8 @@ def learn_answer(topic, answer):
 def delay_answer(topic, answer):
 	database.delayAnswer(answer)
 	return redirect("/learn/%d" % topic)
+
+@app.route("/learn/toggle/<int:topic>/<int:answer>/<string:flag>")
+def toggle_flag(topic, answer, flag):
+	database.toggleVerification(answer, flag)
+	return redirect("/learn/%d" % topic)

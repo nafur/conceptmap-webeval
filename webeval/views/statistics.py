@@ -28,8 +28,6 @@ def stats_edgeusage():
 		kwargs = getFilterSettings(request.form)
 		cols,rows,body = stats.collectEdgeUsedCounts(**kwargs)
 		kwargs.update({"cols": cols, "rows": rows, "body": body})
-		#plot = stats.collectNodeUsagePlot(topic, core, timing = request.form.get('timing', ''), medium = request.form.get('medium', ''))
-		#kwargs.update({"plot": plot})
 	return render_template("stats/edgeusage.html", **kwargs)
 
 @app.route("/statistics/groups", methods=["GET", "POST"])

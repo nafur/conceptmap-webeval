@@ -48,12 +48,12 @@ ORDER BY c1 desc
 	listing = list(map(lambda r: [
 			r["name"],
 			"%s (%0.2f%%)" % (r["c1"], r["c1"]*100 / core["students"]),
-			"%s (%0.2f per student)" % (r["c2"], r["c2"] / core["students"])
+			"%s (%0.2f per student)" % (r["c3"], r["c3"] / core["students"])
 		], res))
 	if len(res) > 0:
 		foot = ["Average",
 			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c1"]), pstdev(res, lambda x: x["c1"])),
-			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c2"]), pstdev(res, lambda x: x["c2"])),
+			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c3"]), pstdev(res, lambda x: x["c3"])),
 		]
 	else: foot = None
 	plotdata = map(lambda r: [r["name"], [r["c1"]]], res)

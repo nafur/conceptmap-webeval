@@ -250,3 +250,8 @@ def setVerification(answer, flag):
 	print("Setting to %d" % flag)
 	with db():
 		cursor().execute("UPDATE answers SET verification=? WHERE id=?", (flag,answer))
+
+def toggleVerification(answer, flag):
+	flag = 2**VERIFICATION_FLAGS.index(flag)
+	with db():
+		cursor().execute("UPDATE answers SET verification=((~verification & ?) | (verification & ~?)) WHERE id=?", (flag,flag,answer))

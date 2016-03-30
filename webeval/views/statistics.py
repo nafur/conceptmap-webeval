@@ -17,8 +17,7 @@ def stats_nodeusage():
 	kwargs = {}
 	if request.method == "POST":
 		kwargs = getFilterSettings(request.form)
-		head,body,foot = stats.collectNodeUsedCounts(**kwargs)
-		plot = stats.collectNodeUsagePlot(**kwargs)
+		head,body,foot,plot = stats.collectNodeUsedCounts(**kwargs)
 		kwargs.update({"head": head, "body": body, "foot": foot, "plot": plot})
 	return render_template("stats/nodeusage.html", **kwargs)
 

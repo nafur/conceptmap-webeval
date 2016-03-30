@@ -26,15 +26,16 @@ def printUsages(data, desc, key, str):
 	data = map(str, data)
 	print("\n".join([desc] + list(data) + [""]))
 
-def gatherCoreData(topic):
-	return {"students": database.countStudents(topic)}
+def gatherCoreData(group, medium, topic):
+	return {"students": database.countStudents(group, medium, topic)}
 
 def collectNodeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
-	core = gatherCoreData(topic)
+	core = gatherCoreData(group, medium, topic)
 	res = database.cursor().execute("""
 SELECT
 	nodes.name,
 	COUNT(DISTINCT students.id) AS c1,
+	COUNT(DISTINCT solutions.id) AS c2,
 	COUNT(DISTINCT answers.id) AS c3
 FROM nodes
 LEFT JOIN answers ON (nodes.id = answers.src OR nodes.id = answers.dest)
@@ -45,41 +46,26 @@ GROUP BY nodes.id
 ORDER BY c1 desc
 """ % (timing == "", medium == "", ordering == "", group == "", verification_require == ""), (topic,timing,medium,ordering,group,verification_require)).fetchall()
 	listing = list(map(lambda r: [
-			r[0],
-			"%s (%0.2f%%)" % (r[1], r[1]*100 / core["students"]),
-			"%s (%0.2f per student)" % (r[2], r[2] / core["students"])
+			r["name"],
+			"%s (%0.2f%%)" % (r["c1"], r["c1"]*100 / core["students"]),
+			"%s (%0.2f per student)" % (r["c2"], r["c2"] / core["students"])
 		], res))
 	if len(res) > 0:
 		foot = ["Average",
-			"%0.2f ±%0.2f" % (mean(res, lambda x: x[1]), pstdev(res, lambda x: x[1])),
-			"%0.2f ±%0.2f" % (mean(res, lambda x: x[2]), pstdev(res, lambda x: x[2])),
+			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c1"]), pstdev(res, lambda x: x["c1"])),
+			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c2"]), pstdev(res, lambda x: x["c2"])),
 		]
 	else: foot = None
+	plotdata = map(lambda r: [r["name"], [r["c1"]]], res)
+	plotres = plot.barplot("nodeusage-%s-%s-%s-%s-%s-%s.png" % (timing,medium,ordering,group,verification_require,verification_exclude), plotdata)
 	return ([
 		"Node",
 		"Used by n students",
 		"Used in n connections"
-	], listing, foot)
-
-def collectNodeUsagePlot(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
-	core = gatherCoreData(topic)
-	res = database.cursor().execute("""
-SELECT
-	nodes.name,
-	COUNT(DISTINCT answers.solution) AS c1
-FROM nodes
-LEFT JOIN answers ON (nodes.id = answers.src OR nodes.id = answers.dest)
-LEFT JOIN solutions ON (answers.solution = solutions.id)
-LEFT JOIN students ON (solutions.student = students.id)
-WHERE solutions.topic=? AND (timing=? OR %d) AND (medium=? OR %d) AND (verification = ? OR %d)
-GROUP BY nodes.id
-ORDER BY c1 desc
-""" % (timing == "", medium == "", verification_require == ""), (topic,timing,medium,verification_require)).fetchall()
-	res = list(map(lambda r: [r[0], [r[1]]], res))
-	return plot.barplot("nodeusage-%s-%s-%s.png" % (timing,medium,verification_require), res)
+	], listing, foot, plotres)
 
 def collectEdgeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
-	core = gatherCoreData(topic)
+	core = gatherCoreData(group, medium, topic)
 	nodes = database.listNodes(topic)
 	nm = {}
 	for n in nodes: nm[n["id"]] = len(nm)
@@ -105,7 +91,7 @@ WHERE n1.topic = ? AND n2.topic = ? AND (timing=? OR %d) AND (medium=? OR %d) AN
 	return (nodes, nodes, table)
 
 def collectEdgeCorrect(topic, timing = None, medium = None, verification = None):
-	core = gatherCoreData(topic)
+	core = gatherCoreData(group, medium, topic)
 	nodes = database.listNodes(topic)
 	nm = {}
 	for n in nodes: nm[n["id"]] = len(nm)
@@ -133,59 +119,3 @@ WHERE n1.topic = ? AND n2.topic = ? AND (timing=? OR %d) AND (medium=? OR %d)
 	table.append(newRow + [""])
 	table = reformat(table, formatPercent, isNumber)
 	return ["table", nodes, nodes, table]
-
-stats = {
-	"edges": {
-		"edgeCount": ("Edge Usage Count", collectEdgeUsedCounts, {}),
-		"edgeCorrect": ("Edge Correct", collectEdgeCorrect, {"verification": 6}),
-	},
-	"nodes": {},
-	"verification": {}
-}
-for t in [None, "Vorher", "Nachher"]:
-	for m in [None, "Video", "Text"]:
-		ts = "" if t == None else t
-		ms = "" if m == None else m
-		stats["nodes"].update({
-			"nodeUsageCount%s_%s" % (ts,ms): ("Node Usage Count %s %s" % (ts,ms), collectNodeUsedCounts, {"timing": t, "medium": m}),
-			"nodeUsagePlot%s_%s" % (ts,ms): ("Node Usage Plot %s %s" % (ts,ms), collectNodeUsagePlot, {"timing": t, "medium": m}),
-		})
-		for v in [30]:
-			vs = "" if v == None else ",".join(database.unpackVerification(v))
-			args = {"timing": t, "medium": m, "verification": v}
-			stats["nodes"].update({
-				"nodeUsageCount%s_%s_%s" % (ts,ms,str(v)): ("Node Usage Count %s %s %s" % (ts,ms,vs), collectNodeUsedCounts, args),
-				"nodeUsagePlot%s_%s_%s" % (ts,ms,str(v)): ("Node Usage Plot %s %s %s" % (ts,ms,vs), collectNodeUsagePlot, args),
-			})
-			stats["edges"].update({
-				"edgeCorrect%s_%s_%s" % (ts,ms,str(v)): ("Edge Correct %s %s %s" % (ts,ms,vs), collectEdgeCorrect, args),
-			})
-
-# Supported statistics output:
-# - listing: a list of records
-#	Arguments: names, records
-#		names: a list of captions for the columns
-#		records: a list of iterables that represent the rows
-# - table: a table with arbitrary rows and columns
-#	Arguments: columns, rows, cells
-#		columns: a list of column labels
-#		rows: a list of row labels
-#		cells: a two-dimensional list that represents the cells. first dimension is row.
-
-def generateStats(topic):
-	s = {}
-
-	print("Generating stats:")
-	print("\tcore")
-	core = gatherCoreData(topic)
-	for group in sorted(stats):
-		print("\t" + group)
-		s[group] = {}
-		for stat in sorted(stats[group]):
-			print("\t\t" + stats[group][stat][0])
-			kwargs = stats[group][stat][2]
-			s[group][stat] = [stats[group][stat][0]] + stats[group][stat][1](topic, core, **kwargs)
-
-	env = jinja2.Environment(loader=jinja2.FileSystemLoader("tpl/"))
-	tpl = env.get_template("stats.tpl")
-	open("out/stats_%d.html" % (topic,), "w").write(tpl.render(stats = s, core = core))

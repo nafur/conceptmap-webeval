@@ -145,9 +145,9 @@
 {% endif %}
 {%- endmacro %}
 
-{% macro show_core_stats(topic) %}
+{% macro show_core_stats(group,medium,topic) %}
 <ul class="list-inline" style="margin-bottom: 0px;">
-	{% for key,val in core_stats(topic)|dictsort %}
+	{% for key,val in core_stats(group,medium,topic)|dictsort %}
 	<li>{{ key }} <span class="badge">{{ val }}</span></li>
 	{% endfor %}
 </ul>

@@ -91,7 +91,7 @@ def listStudentsByGroup(group):
 def listStudentsByTopic(topic):
 	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) WHERE solutions.topic = ? GROUP BY students.id ORDER BY name", (topic,)).fetchall()
 def listStudentsByFilter(group, medium, topic):
-	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) LEFT JOIN topics ON (solutions.topic = topics.id) WHERE class=? AND medium=? AND topics.name=? GROUP BY students.id ORDER BY name", (group,medium,topic)).fetchall()
+	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) WHERE class=? AND medium=? AND solutions.topic=? GROUP BY students.id ORDER BY name", (group,medium,topic)).fetchall()
 
 def countStudents(topic = None):
 	if topic == None:

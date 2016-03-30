@@ -85,27 +85,35 @@ def loadAnswerSet(path, pattern = "default"):
 		n = 1
 		nm = NodeMap(topic)
 		data = {}
+		prglist = []
 		for row in fixTrivialErrors(history):
 			src = nm.get(row["Source"])
 			dst = nm.get(row["Destination"])
 			if row["Action"] == "Connecting":
-				database.addProgress(solution, n, "create", src, dst, "")
+				#database.addProgress(solution, n, "create", src, dst, "")
+				prglist.append((solution, n, "create", src, dst, ""))
 				if (src,dst) not in data: data[(src,dst)] = []
 				data[(src,dst)].append((n, ""))
 			elif row["Action"] == "Renaming":
 				if not (src,dst) in data: continue
-				database.addProgress(solution, n, "rename", src, dst, row["to"])
+				#database.addProgress(solution, n, "rename", src, dst, row["to"])
+				prglist.append((solution, n, "rename", src, dst, row["to"]))
 				data[(src,dst)] = list(map(lambda s: (n,row["to"]) if s[1]==row["from"] else s, data[(src,dst)]))
 			elif row["Action"] == "Disconnecting":
 				if not (src,dst) in data: continue
-				database.addProgress(solution, n, "remove", src, dst, "")
+				#database.addProgress(solution, n, "remove", src, dst, "")
+				prglist.append((solution, n, "remove", src, dst, ""))
 				if len(data[(src,dst)]) > 1:
 					failed.append("%s (%s, %s -> %s)" % (file,"Removed duplicate connection",row["Source"],row["Destination"]))
 					continue
 				del data[(src,dst)]
 			n += 1
+		database.addProgressTransactional(prglist)
+		anslist = []
 		for d in data:
 			for a in data[d]:
 				ordering,desc = a
-				database.addAnswer(solution, ordering, d[0], d[1], desc)
+				#database.addAnswer(solution, ordering, d[0], d[1], desc)
+				anslist.append((solution, ordering, d[0], d[1], desc))
+		database.addAnswerTransactional(anslist)
 	return (res,failed)

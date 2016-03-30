@@ -132,6 +132,12 @@ def addAnswer(solution, ordering, src, dest, desc):
 	with db():
 		cursor().execute("INSERT OR IGNORE INTO answers (solution,ordering,src,dest,description) VALUES (?,?,?,?,?)", (solution,ordering,src,dest,desc))
 
+def addAnswerTransactional(list):
+	with db():
+		for l in list:
+			solution, ordering, src, dest, desc = l
+			cursor().execute("INSERT OR IGNORE INTO answers (solution,ordering,src,dest,description) VALUES (?,?,?,?,?)", (solution,ordering,src,dest,desc))
+
 def getAnswer(id):
 	return cursor().execute("""
 SELECT
@@ -154,6 +160,14 @@ def addProgress(solution, ordering, action, src, dest, desc):
 	action = actionmap[action]
 	with db():
 		cursor().execute("INSERT OR IGNORE INTO progress (solution,ordering,action,src,dest,description) VALUES (?,?,?,?,?,?)", (solution,ordering,action,src,dest,desc))
+
+def addProgressTransactional(list):
+	actionmap = {"create": 0, "rename": 1, "remove": 2}
+	with db():
+		for l in list:
+			solution, ordering, action, src, dest, desc = l
+			action = actionmap[action]
+			cursor().execute("INSERT OR IGNORE INTO progress (solution,ordering,action,src,dest,description) VALUES (?,?,?,?,?,?)", (solution,ordering,action,src,dest,desc))
 
 def unverifiedAnswers(topic, limit = 10):
 	return cursor().execute("""

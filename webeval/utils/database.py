@@ -9,14 +9,18 @@ VERIFICATION_FLAGS = ["fully verified", "formally correct", "content-wise correc
 VERIFICATION_ICONS = [["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"]]
 
 def createTables():
+	# Table of different topics being tested
 	db().execute('''CREATE TABLE topics (id integer primary key, name text)''')
+	# Table of all the nodes (or terms) that must be connected. Each node is associated with a topic.
 	db().execute('''CREATE TABLE nodes (id integer primary key, topic int, name text)''')
+	# Table of all students that participate. Each student is part of a group (or class) and learned the topic using a specific medium.
 	db().execute('''CREATE TABLE students (id integer primary key, name text, medium text, class text)''')
-	db().execute('''CREATE TABLE solutions (id integer primary key, student int, ordering int, topic int, timing int)''')
+	# Table of all solutions that the students submitted for some topic. The students work on the topics sequentially, thus there is an ordering. Furthermore, a student submits a solution both before and after the practical course.
+	db().execute('''CREATE TABLE solutions (id integer primary key, student int, topic int, ordering int, timing int)''')
+	# Table of all answers (or edges in one final solution). They are ordered chronologically and consist of the source and destination node and the description of the edge. They can be verified using the flags defined in VERIFICATION_FLAGS and can be delayed within the verification process.
 	db().execute('''CREATE TABLE answers (id integer primary key, solution int, ordering int, src int, dest int, description text, verification int DEFAULT 0, delay int DEFAULT 0)''')
-	#db().execute('''CREATE UNIQUE INDEX answers_unique ON answers(solution,src,dest)''')
+	# Table of the progress of a solution. Compared to the answers, it not only contains the final edges but all actions performed during the solution.
 	db().execute('''CREATE TABLE progress (id integer primary key, solution int, ordering int, action int, src int, dest int, description text)''')
-	db().execute('''CREATE UNIQUE INDEX progress_unique ON progress(solution,ordering)''')
 
 def db():
 	db = getattr(g, '_database', None)

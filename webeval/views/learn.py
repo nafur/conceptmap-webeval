@@ -17,7 +17,7 @@ def learn(topic):
 def learn_answer(topic, answer):
 	if request.method == "GET":
 		return render_template("learn/learn_answer.html", topic = database.getTopic(topic), answer = database.getAnswer(answer))
-	database.setVerification(answer, database.getVerificationFromMap(request.form))
+	database.setVerification(answer, database.getVerificationFromMap("", request.form))
 	return redirect("/learn/%d" % topic)
 
 @app.route("/learn/delay/<int:topic>/<int:answer>")

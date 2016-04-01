@@ -57,7 +57,7 @@ ORDER BY c1 desc
 		]
 	else: foot = None
 	plotdata = map(lambda r: [r["name"], [r["c1"]]], res)
-	plotres = plot.barplot("nodeusage-%s-%s-%s-%s-%s-%s.png" % (timing,medium,ordering,group,verification_require,verification_exclude), plotdata)
+	plotres = plot.barplot("nodeusage-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude), plotdata)
 	return ([
 		"Node",
 		"Used by n students",

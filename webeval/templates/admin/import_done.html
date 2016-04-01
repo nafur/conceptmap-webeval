@@ -1,26 +1,34 @@
 {% extends 'master.html' %}
 {% block content %}
+{% if failed|length == 0 %}
 <div class="panel panel-success">
+{% else %}
+<div class="panel panel-warn">
+{% endif %}
 	<div class="panel-heading">File import finished</div>
 	<div class="panel-body">
 		{% for msg in messages %}
 		<p>{{ msg }}</p>
 		{% endfor %}
-		Loaded:
-		<ul>
-		{% for f in files %}
-			<li>{{ f }}</li>
-		{% endfor %}
-		</ul>
 
-		Failed:
+		{% if failed|length > 0 %}
+		Errors in {{ failed|length }} files:
 		<ol>
 		{% for f in failed %}
 			<li>{{ f }}</li>
 		{% endfor %}
 		</ol>
+		{% endif %}
 
-		<a href="/admin/browse" class="btn btn-default">Return to file selection</a>
+		Loaded {{ success|length }} files:
+		<ul>
+		{% for s in success %}
+			<li>{{ s }}</li>
+		{% endfor %}
+		</ul>
+
+
+		<a href="/admin/browse/{{ path }}" class="btn btn-default">Return to file selection</a>
 		<a href="/" class="btn btn-default">Return to home</a>
 	</div>
 </div>

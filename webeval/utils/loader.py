@@ -63,22 +63,21 @@ def fixTrivialErrors(rows):
 	return res
 
 def loadAnswerSet(path, pattern = "default"):
-	res = [[],[]]
+	msgs = []
 	if os.path.isfile(path):
 		files = [path]
 	elif os.path.isdir(path):
 		files = glob.glob(path + "/*/*/*")
 	else:
-		res[0].append("\"" + path + "\" is neither a file nor a folder. We assume that it is a file pattern...")
+		msgs.append("\"" + path + "\" is neither a file nor a folder. We assume that it is a file pattern...")
 		files = glob.glob(path)
 
 	success = []
 	failed = []
 	for file in files:
-		res[1].append(file)
 		match = parseFilename(file, pattern)
 		if match == None:
-			res[0].append("Could not match \"" + file + "\" against pattern \"" + FILE_PATTERN[pattern] + "\".")
+			msgs.append("Could not match \"" + file + "\" against pattern \"" + FILE_PATTERN[pattern] + "\".")
 			continue
 		(topic,student,solution) = match
 		history = loadCSV(file)
@@ -116,4 +115,5 @@ def loadAnswerSet(path, pattern = "default"):
 				#database.addAnswer(solution, ordering, d[0], d[1], desc)
 				anslist.append((solution, ordering, d[0], d[1], desc))
 		database.addAnswerTransactional(anslist)
-	return (res,failed)
+		success.append(file)
+	return (msgs,success,failed)

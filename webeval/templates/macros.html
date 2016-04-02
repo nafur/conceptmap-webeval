@@ -3,7 +3,7 @@
 	<label for="{{ name }}">{{ label }}</label>
 	<select name="{{ name }}" class="form-control">
 		{% for value,desc in map|dictsort %}
-			{%- if value == default -%}
+			{%- if value|string == default|string -%}
 		<option selected="selected" value="{{ value }}">{{ desc }}</option>
 			{%- else -%}
 		<option value="{{ value }}">{{ desc }}</option>

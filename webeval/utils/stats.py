@@ -26,11 +26,38 @@ def printUsages(data, desc, key, str):
 	data = map(str, data)
 	print("\n".join([desc] + list(data) + [""]))
 
-def gatherCoreData(group, medium, topic):
-	return {"students": database.countStudents(group, medium, topic)}
+def gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude):
+	return {"students": database.countStudents(topic=topic, medium=medium, group=group, ordering=ordering, timing=timing, verification_require=verification_require, verification_exclude=verification_exclude)}
+
+class Listing:
+	type = "listing"
+	def __init__(self, name, body):
+		self.name = name
+		self.body = body
+	def setHead(self, head):
+		self.head = head
+	def setFoot(self, foot):
+		self.foot = foot
+
+class Table:
+	type = "table"
+	def __init__(self, name, cols, rows, body):
+		self.name = name
+		self.cols = cols
+		self.rows = rows
+		self.body = body
+
+class Plot:
+	type = "plot"
+	def __init__(self, name, type, filename, data):
+		self.name = name
+		if type == "barplot":
+			self.filename = plot.barplot(filename, data)
+		else:
+			print("Error: Unknown plot type " % type)
 
 def collectNodeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
-	core = gatherCoreData(group, medium, topic)
+	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)
 	res = database.cursor().execute("""
 SELECT
 	nodes.name,
@@ -41,31 +68,63 @@ FROM nodes
 LEFT JOIN answers ON (nodes.id = answers.src OR nodes.id = answers.dest)
 LEFT JOIN solutions ON (answers.solution = solutions.id)
 LEFT JOIN students ON (solutions.student = students.id)
-WHERE solutions.topic=? AND (timing=? OR %d) AND (medium=? OR %d) AND (solutions.ordering=? OR %d) AND (class=? OR %d) AND (verification=? OR %d)
+WHERE (solutions.topic=?) AND (timing=? OR %d) AND (medium=? OR %d) AND (solutions.ordering=? OR %d) AND (class=? OR %d) AND (verification=? OR %d)
 GROUP BY nodes.id
 ORDER BY c1 desc
 """ % (timing == "", medium == "", ordering == "", group == "", verification_require == ""), (topic,timing,medium,ordering,group,verification_require)).fetchall()
-	listing = list(map(lambda r: [
+
+	lstdata = map(lambda r: [
 			r["name"],
 			"%s (%0.2f%%)" % (r["c1"], r["c1"]*100 / core["students"]),
 			"%s (%0.2f per student)" % (r["c3"], r["c3"] / core["students"])
-		], res))
-	if len(res) > 0:
-		foot = ["Average",
-			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c1"]), pstdev(res, lambda x: x["c1"])),
-			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c3"]), pstdev(res, lambda x: x["c3"])),
-		]
-	else: foot = None
-	plotdata = map(lambda r: [r["name"], [r["c1"]]], res)
-	plotres = plot.barplot("nodeusage-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude), plotdata)
-	return ([
+		], res)
+	lst = Listing("Node usage", lstdata)
+	lst.setHead([
 		"Node",
 		"Used by n students",
 		"Used in n connections"
-	], listing, foot, plotres)
+	])
+	if len(res) > 0:
+		lst.setFoot(["Average",
+			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c1"]), pstdev(res, lambda x: x["c1"])),
+			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c3"]), pstdev(res, lambda x: x["c3"])),
+		])
+	plotfilename = "nodeusage-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude)
+	plt = Plot("Node usage", "barplot", plotfilename, map(lambda r: [r["name"], [r["c1"]]], res))
+	return [lst, plt]
+
+def nodesPerStudent(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
+	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)
+	res = database.cursor().execute("""
+SELECT
+	ncnt,
+	COUNT(DISTINCT student) AS scnt
+FROM (
+	SELECT
+		solutions.student,
+		COUNT(DISTINCT nodes.id) AS ncnt
+	FROM answers
+	INNER JOIN solutions ON (answers.solution = solutions.id)
+	INNER JOIN nodes ON (answers.src = nodes.id OR answers.dest = nodes.id)
+	INNER JOIN students ON (solutions.student = students.id)
+	WHERE (solutions.topic=?) AND (timing=? OR %d) AND (medium=? OR %d) AND (solutions.ordering=? OR %d) AND (class=? OR %d) AND (verification=? OR %d)
+	GROUP BY solutions.student
+)
+GROUP BY ncnt
+""" % (timing == "", medium == "", ordering == "", group == "", verification_require == ""), (topic,timing,medium,ordering,group,verification_require)).fetchall()
+	lstdata = map(lambda r: [
+		r["ncnt"],
+		"%s (%0.2f%%)" % (r["scnt"], r["scnt"]*100 / core["students"])
+	], res)
+	lst = Listing("Students using n nodes", lstdata)
+	lst.setHead(["# nodes", "# students"])
+
+	plotfilename = "nodesperstudent-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude)
+	plt = Plot("Nodes per student", "barplot", plotfilename, map(lambda r: [r["ncnt"], [r["scnt"]]], res))
+	return [lst, plt]
 
 def collectEdgeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
-	core = gatherCoreData(group, medium, topic)
+	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)
 	nodes = database.listNodes(topic)
 	nm = {}
 	for n in nodes: nm[n["id"]] = len(nm)
@@ -88,10 +147,11 @@ WHERE n1.topic = ? AND n2.topic = ? AND (timing=? OR %d) AND (medium=? OR %d) AN
 	for col in range(len(table[0])-1):
 		newRow.append("%0.2f ±%0.2f" % (mean(table, lambda x: x[col]), pstdev(table, lambda x: x[col])))
 	table.append(newRow + [""])
-	return (nodes, nodes, table)
+	tbl = Table("Edge usage", nodes, nodes, table)
+	return [tbl]
 
 def collectEdgeCorrect(topic, timing = None, medium = None, verification = None):
-	core = gatherCoreData(group, medium, topic)
+	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)
 	nodes = database.listNodes(topic)
 	nm = {}
 	for n in nodes: nm[n["id"]] = len(nm)

@@ -94,18 +94,26 @@ def listStudentsByGroup(group):
 	return cursor().execute("SELECT DISTINCT students.* FROM students WHERE class=? ORDER BY name", (group,)).fetchall()
 def listStudentsByTopic(topic):
 	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) WHERE solutions.topic = ? GROUP BY students.id ORDER BY name", (topic,)).fetchall()
-def listStudentsByFilter(group = "", medium = "", topic = ""):
+def listStudentsByFilter(topic = "", medium = "", group = "", ordering = "", timing = "", verification_require = "", verification_exclude = ""):
 	return cursor().execute("""
 SELECT students.*
 FROM students
 LEFT JOIN solutions ON (students.id = solutions.student)
-WHERE (class=? OR %d) AND (medium=? OR %d) AND (solutions.topic=? OR %d)
+LEFT JOIN answers ON (solutions.id = answers.solution)
+WHERE
+	(solutions.topic=? OR %d) AND
+	(medium=? OR %d) AND
+	(class=? OR %d) AND
+	(solutions.ordering=? OR %d) AND
+	(timing=? OR %d) AND
+	(verification & ? = ? OR %d) AND
+	(verification & ? = 0 OR %d)
 GROUP BY students.id
 ORDER BY name
-""" % (group == "", medium == "", topic == ""), (group,medium,topic)).fetchall()
+""" % (topic == "", medium == "", group == "", ordering == "", timing == "", verification_require == "", verification_exclude == ""), (topic,medium,group,ordering,timing,verification_require,verification_require,verification_exclude)).fetchall()
 
-def countStudents(group = "", medium = "", topic = ""):
-	return len(listStudentsByFilter(group, medium, topic))
+def countStudents(**kwargs):
+	return len(listStudentsByFilter(**kwargs))
 
 def addSolution(student, ordering, topic, timing):
 	c = cursor()

@@ -10,12 +10,9 @@
 		</form>
 	</div>
 	<div class="panel-footer">
-		{{ macros.show_core_stats(group,medium,topic) }}
+		{{ macros.show_core_stats() }}
 	</div>
 </div>
 
-{% if body %}
-{{ macros.table("Edge usage", cols,rows,body) }}
-{{ macros.show_plot("Edge usage", plot) }}
-{% endif %}
+{{ macros.show_stats(obj) }}
 {% endblock %}

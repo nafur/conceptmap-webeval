@@ -17,8 +17,9 @@ def stats_nodeusage():
 	kwargs = {}
 	if request.method == "POST":
 		kwargs = getFilterSettings(request.form)
-		head,body,foot,plot = stats.collectNodeUsedCounts(**kwargs)
-		kwargs.update({"head": head, "body": body, "foot": foot, "plot": plot})
+		obj = stats.collectNodeUsedCounts(**kwargs)
+		obj = obj + stats.nodesPerStudent(**kwargs)
+		kwargs.update({"obj": obj})
 	return render_template("stats/nodeusage.html", **kwargs)
 
 @app.route("/statistics/edgeusage", methods=["GET", "POST"])
@@ -26,8 +27,8 @@ def stats_edgeusage():
 	kwargs = {}
 	if request.method == "POST":
 		kwargs = getFilterSettings(request.form)
-		cols,rows,body = stats.collectEdgeUsedCounts(**kwargs)
-		kwargs.update({"cols": cols, "rows": rows, "body": body})
+		obj = stats.collectEdgeUsedCounts(**kwargs)
+		kwargs.update({"obj": obj})
 	return render_template("stats/edgeusage.html", **kwargs)
 
 @app.route("/statistics/groups", methods=["GET", "POST"])

@@ -92,17 +92,19 @@
 	</div>
 {% endmacro %}
 
-{% macro show_listing(name,head,body,foot) -%}
+{% macro show_listing(obj) -%}
 <div class="panel panel-info">
-	{{ start_collapsible_panel(name) }}
+	{{ start_collapsible_panel(obj.name) }}
 		<table class="table table-striped table-condensed" style="margin-bottom: 0px;">
+			{% if obj.head %}
 			<thead>
-				{% for h in head -%}
+				{% for h in obj.head -%}
 				<th>{{ h }}</th>
 				{% endfor %}
 			</thead>
+			{% endif %}
 			<tbody>
-				{% for row in body -%}
+				{% for row in obj.body -%}
 				<tr>
 					{% for item in row -%}
 					<td>{{ item }}</td>
@@ -110,10 +112,10 @@
 				</tr>
 				{% endfor %}
 			</tbody>
-			{% if foot %}
+			{% if obj.foot %}
 			<tfoot>
 				<tr>
-					{% for item in foot -%}
+					{% for item in obj.foot -%}
 					<th>{{ item }}</th>
 					{% endfor %}
 				</tr>
@@ -124,20 +126,20 @@
 </div>
 {%- endmacro %}
 
-{% macro show_table(name,cols,rows,body) -%}
+{% macro show_table(obj) -%}
 <div class="panel panel-info">
-	{{ start_collapsible_panel(name) }}
+	{{ start_collapsible_panel(obj.name) }}
 		<table class="table table-striped table-condensed">
 			<thead>
 				<th></th>
-				{% for h in cols %}
+				{% for h in obj.cols %}
 					<th class="rotate"><div><span>{{ h }}</span></div></th>
 				{% endfor %}
 			</thead>
 			<tbody>
-				{% for row in body %}
+				{% for row in obj.body %}
 				<tr>
-					<th>{{ rows[loop.index0] }}</th>
+					<th>{{ obj.rows[loop.index0] }}</th>
 					{% for item in row %}
 					<td>{{ item }}</td>
 					{% endfor %}
@@ -149,27 +151,40 @@
 </div>
 {%- endmacro %}
 
-{% macro show_plot(name, filename, error) -%}
-{% if filename %}
-	{% if name %}
-	<div class="panel panel-default">
-		{{ start_collapsible_panel(name) }}
-			<div class="text-center">
-				<img src="{{ filename}}" />
-			</div>
-		{{ end_collapsible_panel() }}
-	</div>
-	{% else %}
+{% macro show_plot(obj) -%}
+{% if obj.filename %}
+<div class="panel panel-default">
+	{{ start_collapsible_panel(obj.name) }}
+	{% if obj.description %}<p>{{ obj.description }}</p>{% endif %}
 	<div class="text-center">
-		<img src="{{ filename}}" />
+		<img src="{{ obj.filename }}" />
 	</div>
-	{% endif %}
-{% elif error %}
+	{{ end_collapsible_panel() }}
+</div>
+{% elif obj.error %}
 <div class="panel panel-danger">
-	<div class="panel-heading">{{ error }}</div>
+	<div class="panel-heading">{{ obj.error }}</div>
 </div>
 {% endif %}
 {%- endmacro %}
+
+{% macro show_individual(obj) %}
+<div class="panel panel-default">
+	{{ start_collapsible_panel(obj.name) }}
+	{% if obj.description %}<p>{{ obj.description }}</p>{% endif %}
+	<div class="row">
+	{% for d in obj.data %}
+		<div class="col-md-4">
+			<div class="panel panel-default">
+				<div class="panel-heading">{{ d.title }}: {{ d.value }}</div>
+				{% if d.description %}<div class="panel-body">{{ d.description}}</div>{% endif %}
+			</div>
+		</div>
+	{% endfor %}
+	</div>
+	{{ end_collapsible_panel() }}
+</div>
+{% endmacro %}
 
 {% macro show_core_stats() %}
 <ul class="list-inline" style="margin-bottom: 0px;">
@@ -181,11 +196,13 @@
 
 {% macro show_statobject(obj) %}
 	{% if obj.type == "listing" -%}
-	{{ show_listing(obj.name, obj.head, obj.body, obj.foot) }}
+	{{ show_listing(obj) }}
 	{%- elif obj.type == "table" -%}
-	{{ show_table(obj.name, obj.cols, obj.rows, obj.body) }}
+	{{ show_table(obj) }}
 	{%- elif obj.type == "plot" -%}
-	{{ show_plot(obj.name, obj.filename, obj.error) }}
+	{{ show_plot(obj) }}
+	{%- elif obj.type == "individual" -%}
+	{{ show_individual(obj) }}
 	{%- else -%}
 	<div class="panel panel-warn">
 		<div class="panel-heading">{{ obj.name }}</div>

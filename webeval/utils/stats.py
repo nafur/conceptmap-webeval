@@ -34,6 +34,7 @@ class Listing:
 	def __init__(self, name, body):
 		self.name = name
 		self.body = body
+		self.description = None
 	def setHead(self, head):
 		self.head = head
 	def setFoot(self, foot):
@@ -46,12 +47,14 @@ class Table:
 		self.cols = cols
 		self.rows = rows
 		self.body = body
+		self.description = None
 
 class Plot:
 	type = "plot"
 	def __init__(self, name, data):
 		self.name = name
 		self.data = data
+		self.description = None
 	def setLabels(self, xlabel, ylabel):
 		self.xlabel = xlabel
 		self.ylabel = ylabel
@@ -60,6 +63,15 @@ class Plot:
 			self.filename = plot.barplot(filename, self.data, self.xlabel, self.ylabel)
 		else:
 			self.error = "Error: Unknown plot type \"%s\"." % type
+
+class Individual:
+	type = "individual"
+	def __init__(self, name):
+		self.name = name
+		self.data = []
+	def add(self, title, value, description = None):
+		self.data.append({"title":title, "value":value, "description":description})
+
 
 def collectNodeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
 	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)
@@ -125,11 +137,27 @@ GROUP BY ncnt
 	lst = Listing("Students using n nodes", lstdata)
 	lst.setHead(["# nodes", "# students"])
 
-	plotfilename = "nodesperstudent-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude)
-	plt = Plot("Nodes per student", map(lambda r: [r["ncnt"], [r["scnt"]]], res))
+	plt = Plot("Students with number of nodes", map(lambda r: [r["ncnt"], [r["scnt"]]], res))
 	plt.setLabels("# nodes", "# students")
-	plt.plot("barplot", plotfilename)
-	return [lst, plt]
+	plt.plot("barplot", "nodesperstudent-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude))
+	plt.description = """This plot shows the number of students that have used a specific number of nodes."""
+
+	res = database.cursor().execute("""
+SELECT
+	COUNT(DISTINCT nodes.id) AS cnt
+FROM answers
+INNER JOIN solutions ON (answers.solution = solutions.id)
+INNER JOIN nodes ON (answers.src = nodes.id OR answers.dest = nodes.id)
+INNER JOIN students ON (solutions.student = students.id)
+WHERE (solutions.topic=?) AND (timing=? OR %d) AND (medium=? OR %d) AND (solutions.ordering=? OR %d) AND (class=? OR %d) AND (verification=? OR %d)
+GROUP BY solutions.student
+""" % (timing == "", medium == "", ordering == "", group == "", verification_require == ""), (topic,timing,medium,ordering,group,verification_require)).fetchall()
+
+	avg,dev = mean(res, lambda x: x["cnt"]), pstdev(res, lambda x: x["cnt"])
+
+	ind = Individual("Stuff")
+	ind.add("Nodes used by students", "%0.2f ±%0.2f" % (avg,dev), "The average student used %0.2f nodes." % avg)
+	return [lst, plt, ind]
 
 def collectEdgeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
 	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)

@@ -36,6 +36,9 @@ td.last,th.last {
 					<td class="last">
 						<a href="/learn/{{ topic.id }}/{{ c.id }}"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> edit</a>
 						<a href="/learn/delay/{{ topic.id }}/{{ c.id }}"><span class="glyphicon glyphicon-new-window" aria-hidden="true"></span> delay</a>
+						<form method="POST" action="/learn/verify/{{ topic.id }}/{{ c.id }}" style="display: inline;">
+							<button type="submit" class="btn btn-link" style="padding: 0px;"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> verify</button>
+						</form>
 					</td>
 				</tr>
 

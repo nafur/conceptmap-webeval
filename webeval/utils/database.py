@@ -255,6 +255,9 @@ def getVerificationFromMap(prefix, map):
 def getVerifications():
 	return [{"id": 2**i, "name": VERIFICATION_FLAGS[i], "icon": VERIFICATION_ICONS[i]} for i in range(len(VERIFICATION_FLAGS))]
 
+def firstVerification():
+	return VERIFICATION_FLAGS[0]
+
 def listVerifications():
 	return VERIFICATION_FLAGS[1:]
 

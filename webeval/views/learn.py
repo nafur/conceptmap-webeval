@@ -20,6 +20,11 @@ def learn_answer(topic, answer):
 	database.setVerification(answer, database.getVerificationFromMap("", request.form))
 	return redirect("/learn/%d" % topic)
 
+@app.route("/learn/verify/<int:topic>/<int:answer>", methods=["POST"])
+def verify_answer(topic, answer):
+	database.toggleVerification(answer, database.firstVerification())
+	return redirect("/learn/%d" % topic)
+
 @app.route("/learn/delay/<int:topic>/<int:answer>")
 def delay_answer(topic, answer):
 	database.delayAnswer(answer)

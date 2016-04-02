@@ -21,7 +21,8 @@ def barplot(filename, data, xlabel, ylabel):
     if ylabel != None: ax.set_ylabel(ylabel)
     if xlabel != None: ax.set_xlabel(xlabel)
     ax.xaxis.set_ticks(numpy.arange(0, len(labels), 1) + 0.5)
-    ax.set_xticklabels(labels, rotation=25, ha="right")
+    #todo: use wrap=False
+    ax.set_xticklabels(labels, rotation=25, ha="right", size="small")
 
     plt.subplots_adjust(left=0.125, right=0.9, top=0.9, bottom=0.2)
     plt.savefig("webeval/static/plots/" + filename)

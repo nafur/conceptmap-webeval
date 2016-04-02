@@ -3,7 +3,7 @@ import numpy
 
 colors = ["b", "r", "g"]
 
-def barplot(filename, data):
+def barplot(filename, data, xlabel, ylabel):
     data = list(data)
     if data == []:
         return ""
@@ -18,7 +18,8 @@ def barplot(filename, data):
         r = ax.bar(ind + i*width, d, width, color=colors[i])
 
     labels = list(map(lambda r: r[0], data))
-    ax.set_ylabel("Count")
+    if ylabel != "": ax.set_ylabel(ylabel)
+    if xlabel != "": ax.set_xlabel(xlabel)
     ax.xaxis.set_ticks(numpy.arange(0, len(labels), 1) + 0.5)
     ax.set_xticklabels(labels, rotation=25, ha="right")
 

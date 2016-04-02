@@ -149,7 +149,7 @@
 </div>
 {%- endmacro %}
 
-{% macro show_plot(name, filename) -%}
+{% macro show_plot(name, filename, error) -%}
 {% if filename %}
 	{% if name %}
 	<div class="panel panel-default">
@@ -164,6 +164,10 @@
 		<img src="{{ filename}}" />
 	</div>
 	{% endif %}
+{% elif error %}
+<div class="panel panel-danger">
+	<div class="panel-heading">{{ error }}</div>
+</div>
 {% endif %}
 {%- endmacro %}
 
@@ -181,7 +185,7 @@
 	{%- elif obj.type == "table" -%}
 	{{ show_table(obj.name, obj.cols, obj.rows, obj.body) }}
 	{%- elif obj.type == "plot" -%}
-	{{ show_plot(obj.name, obj.filename) }}
+	{{ show_plot(obj.name, obj.filename, obj.error) }}
 	{%- else -%}
 	<div class="panel panel-warn">
 		<div class="panel-heading">{{ obj.name }}</div>

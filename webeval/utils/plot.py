@@ -18,8 +18,8 @@ def barplot(filename, data, xlabel, ylabel):
         r = ax.bar(ind + i*width, d, width, color=colors[i])
 
     labels = list(map(lambda r: r[0], data))
-    if ylabel != "": ax.set_ylabel(ylabel)
-    if xlabel != "": ax.set_xlabel(xlabel)
+    if ylabel != None: ax.set_ylabel(ylabel)
+    if xlabel != None: ax.set_xlabel(xlabel)
     ax.xaxis.set_ticks(numpy.arange(0, len(labels), 1) + 0.5)
     ax.set_xticklabels(labels, rotation=25, ha="right")
 

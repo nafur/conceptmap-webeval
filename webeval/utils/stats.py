@@ -49,12 +49,17 @@ class Table:
 
 class Plot:
 	type = "plot"
-	def __init__(self, name, type, filename, data, xlabel, ylabel):
+	def __init__(self, name, data):
 		self.name = name
+		self.data = data
+	def setLabels(self, xlabel, ylabel):
+		self.xlabel = xlabel
+		self.ylabel = ylabel
+	def plot(self, type, filename):
 		if type == "barplot":
-			self.filename = plot.barplot(filename, data, xlabel, ylabel)
+			self.filename = plot.barplot(filename, self.data, self.xlabel, self.ylabel)
 		else:
-			print("Error: Unknown plot type " % type)
+			self.error = "Error: Unknown plot type \"%s\"." % type
 
 def collectNodeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
 	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)
@@ -89,8 +94,9 @@ ORDER BY c1 desc
 			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c1"]), pstdev(res, lambda x: x["c1"])),
 			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c3"]), pstdev(res, lambda x: x["c3"])),
 		])
-	plotfilename = "nodeusage-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude)
-	plt = Plot("Node usage", "barplot", plotfilename, map(lambda r: [r["name"], [r["c1"]]], res), "", "# usages")
+	plt = Plot("Node usage", map(lambda r: [r["name"], [r["c1"]]], res))
+	plt.setLabels(None, "# usages")
+	plt.plot("barplot", "nodeusage-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude))
 	return [lst, plt]
 
 def nodesPerStudent(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
@@ -120,7 +126,9 @@ GROUP BY ncnt
 	lst.setHead(["# nodes", "# students"])
 
 	plotfilename = "nodesperstudent-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude)
-	plt = Plot("Nodes per student", "barplot", plotfilename, map(lambda r: [r["ncnt"], [r["scnt"]]], res), "# nodes", "# students")
+	plt = Plot("Nodes per student", map(lambda r: [r["ncnt"], [r["scnt"]]], res))
+	plt.setLabels("# nodes", "# students")
+	plt.plot("barplot", plotfilename)
 	return [lst, plt]
 
 def collectEdgeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):

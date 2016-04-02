@@ -202,7 +202,7 @@
 	{%- elif obj.type == "plot" -%}
 	{{ show_plot(obj) }}
 	{%- elif obj.type == "individual" -%}
-	{{ show_individual(obj) }}
+		{% if obj.notEmpty %}{{ show_individual(obj) }}{% endif %}
 	{%- else -%}
 	<div class="panel panel-warn">
 		<div class="panel-heading">{{ obj.name }}</div>

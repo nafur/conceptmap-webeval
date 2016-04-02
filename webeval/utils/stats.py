@@ -71,7 +71,8 @@ class Individual:
 		self.data = []
 	def add(self, title, value, description = None):
 		self.data.append({"title":title, "value":value, "description":description})
-
+	def notEmpty(self):
+		return len(self.data) > 0
 
 def collectNodeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
 	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)
@@ -153,10 +154,10 @@ WHERE (solutions.topic=?) AND (timing=? OR %d) AND (medium=? OR %d) AND (solutio
 GROUP BY solutions.student
 """ % (timing == "", medium == "", ordering == "", group == "", verification_require == ""), (topic,timing,medium,ordering,group,verification_require)).fetchall()
 
-	avg,dev = mean(res, lambda x: x["cnt"]), pstdev(res, lambda x: x["cnt"])
-
 	ind = Individual("Stuff")
-	ind.add("Nodes used by students", "%0.2f ±%0.2f" % (avg,dev), "The average student used %0.2f nodes." % avg)
+	if len(res) > 0:
+		avg,dev = mean(res, lambda x: x["cnt"]), pstdev(res, lambda x: x["cnt"])
+		ind.add("Nodes used by students", "%0.2f ±%0.2f" % (avg,dev), "The average student used %0.2f nodes." % avg)
 	return [lst, plt, ind]
 
 def collectEdgeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):

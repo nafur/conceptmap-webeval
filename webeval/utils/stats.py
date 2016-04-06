@@ -76,20 +76,19 @@ class Individual:
 
 def collectNodeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
 	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)
-	res = database.cursor().execute("""
+	query = """
 SELECT
-	nodes.name,
-	COUNT(DISTINCT students.id) AS c1,
-	COUNT(DISTINCT solutions.id) AS c2,
-	COUNT(DISTINCT answers.id) AS c3
-FROM nodes
-LEFT JOIN answers ON (nodes.id = answers.src OR nodes.id = answers.dest)
-LEFT JOIN solutions ON (answers.solution = solutions.id)
-LEFT JOIN students ON (solutions.student = students.id)
-WHERE (solutions.topic=?) AND (timing=? OR %d) AND (medium=? OR %d) AND (solutions.ordering=? OR %d) AND (class=? OR %d) AND (verification=? OR %d)
+	nodes.name AS name,
+	COUNT(DISTINCT student) AS c1,
+	COUNT(DISTINCT solution) AS c2,
+	COUNT(DISTINCT view_answers.id) AS c3
+FROM view_answers
+LEFT JOIN nodes ON (nodes.id = src OR nodes.id = dest)
+WHERE ${FILTER}
 GROUP BY nodes.id
 ORDER BY c1 desc
-""" % (timing == "", medium == "", ordering == "", group == "", verification_require == ""), (topic,timing,medium,ordering,group,verification_require)).fetchall()
+"""
+	res = database.executeFiltered(query, topic, medium, group, ordering, timing, verification_require, verification_exclude).fetchall()
 
 	lstdata = map(lambda r: [
 			r["name"],
@@ -120,14 +119,12 @@ SELECT
 	COUNT(DISTINCT student) AS scnt
 FROM (
 	SELECT
-		solutions.student,
+		student,
 		COUNT(DISTINCT nodes.id) AS ncnt
-	FROM answers
-	INNER JOIN solutions ON (answers.solution = solutions.id)
-	INNER JOIN nodes ON (answers.src = nodes.id OR answers.dest = nodes.id)
-	INNER JOIN students ON (solutions.student = students.id)
-	WHERE (solutions.topic=?) AND (timing=? OR %d) AND (medium=? OR %d) AND (solutions.ordering=? OR %d) AND (class=? OR %d) AND (verification=? OR %d)
-	GROUP BY solutions.student
+	FROM view_answers
+	INNER JOIN nodes ON (nodes.id = src OR nodes.id = dest)
+	WHERE (view_answers.topic=?) AND (timing=? OR %d) AND (medium=? OR %d) AND (ordering=? OR %d) AND (class=? OR %d) AND (verification=? OR %d)
+	GROUP BY student
 )
 GROUP BY ncnt
 """ % (timing == "", medium == "", ordering == "", group == "", verification_require == ""), (topic,timing,medium,ordering,group,verification_require)).fetchall()

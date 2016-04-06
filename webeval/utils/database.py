@@ -22,6 +22,29 @@ def createTables():
 	# Table of the progress of a solution. Compared to the answers, it not only contains the final edges but all actions performed during the solution.
 	db().execute('''CREATE TABLE progress (id integer primary key, solution int, ordering int, action int, src int, dest int, description text)''')
 
+	# View on all answers
+	db().execute('''
+CREATE VIEW view_answers AS
+SELECT
+	answers.id,
+	answers.solution,
+	answers.src,
+	answers.dest,
+	answers.description,
+	answers.verification,
+	answers.delay,
+	solutions.student,
+	solutions.ordering,
+	solutions.topic,
+	solutions.timing,
+	students.name,
+	students.medium,
+	students.class
+FROM answers
+INNER JOIN solutions ON (answers.solution = solutions.id)
+INNER JOIN students ON (solutions.student = students.id)
+''')
+
 def db():
 	db = getattr(g, '_database', None)
 	if db is None:
@@ -44,6 +67,19 @@ def cursor():
 def reset():
 	if os.path.isfile(DBFILE):
 		os.unlink(DBFILE)
+
+def executeFiltered(query, topic = "", timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = "", params_before = [], params_after = []):
+	f = []
+	if topic != "": f.append(("(view_answers.topic=?)", [topic]))
+	if timing != "": f.append(("(timing=?)", [timing]))
+	if medium != "": f.append(("(medium=?)", [medium]))
+	if ordering != "": f.append(("(ordering=?)", [ordering]))
+	if group != "": f.append(("(class=?)", [group]))
+	if verification_require != "": f.append(("(verification & ? = ?)", [verification_require,verification_require]))
+	if verification_exclude != "": f.append(("(verification & ? = 0)", [verification_exclude]))
+	query = query.replace("${FILTER}", " AND ".join(map(lambda x: x[0], f)))
+	params = params_before + sum(map(lambda x: x[1], f), params_after)
+	return cursor().execute(query, params)
 
 def addTopic(name):
 	c = cursor()

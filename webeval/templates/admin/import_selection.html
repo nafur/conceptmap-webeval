@@ -10,9 +10,22 @@
 	</div>
 	<div class="panel-body">
 		<p>
-			<a href="/admin/import/{{ curpath }}" class="btn btn-default">Import selected directory</a>
+			<form class="form-inline" action="/admin/import/{{ curpath }}" method="POST">
+				<div class="form-group">
+					<label for="pattern">Pattern</label>
+					<select name="pattern" class="form-control">
+				{% for p in pattern %}
+					{% if p == patternDefault %}
+						<option selected="selected">{{ p }}</option>
+					{% else %}
+						<option>{{ p }}</option>
+					{% endif %}
+				{% endfor %}
+					</select>
+				</div>
+				<button class="btn btn-primary">Import selected directory</button>
+			</form>
 		</p>
-
 		<p>
 			{% if parent %}
 			<a href="/admin/browse/{{ parent }}" class="btn btn-default"><span class="glyphicon glyphicon-chevron-up" /> ..</a>

@@ -37,11 +37,10 @@ def browseFiles(path):
 	breadcrumbs.append(("~",""))
 	breadcrumbs.reverse()
 
-	return render_template("admin/import_selection.html", parent = parent, curpath = path, files = files, dirs = dirs, breadcrumbs = breadcrumbs)
+	return render_template("admin/import_selection.html", pattern = loader.patternList(), patternDefault = loader.patternDefault(), parent = parent, curpath = path, files = files, dirs = dirs, breadcrumbs = breadcrumbs)
 
-
-@app.route("/admin/import/<path:path>")
+@app.route("/admin/import/<path:path>", methods=["POST"])
 def importFiles(path):
 	abs_path = os.path.join(os.path.expanduser("~"), path)
-	msgs,success,failed = loader.loadAnswerSet(abs_path)
+	msgs,success,failed = loader.loadAnswerSet(abs_path, request.form["pattern"])
 	return render_template("admin/import_done.html", messages = msgs, success = success, failed = failed, path = path)

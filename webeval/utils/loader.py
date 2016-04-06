@@ -6,8 +6,14 @@ import re
 from webeval.utils import database
 
 FILE_PATTERN = {
-	"default": ".*/?(?P<timing>(Vorher|Nachher))/.*_(?P<group>[^_]*)_(?P<medium>(Video|Text))_(?P<ordering>[0-9]+)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv"
+	"default": ".*/?(?P<timing>(Vorher|Nachher))/.*_(?P<group>[^_]*)_(?P<medium>(Video|Text))_(?P<ordering>[0-9]+)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
+	"komisch": ".*/?(?P<course>[^/]*)/(?P<group>[^_]*)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
 }
+
+def patternList():
+	return sorted(FILE_PATTERN.keys())
+def patternDefault():
+	return "default"
 
 def canonicalizeTopic(topic):
 	topic = re.sub(r'\s*[-_]\s*', ' - ', topic)
@@ -16,9 +22,13 @@ def canonicalizeTopic(topic):
 def parseFilename(filename, pattern):
 	res = re.match(FILE_PATTERN[pattern], filename.replace("\\","/"))
 	if res != None:
-		topic = database.addTopic(canonicalizeTopic(res.group("topic")))
-		student = database.addStudent(res.group("student").upper(), res.group("medium"), res.group("group"))
-		solution = database.addSolution(student, res.group("ordering"), topic, res.group("timing"))
+		r = res.groupdict()
+		if not "timing" in r: r["timing"] = "Vorher"
+		if not "medium" in r: r["medium"] = "Text"
+		if not "ordering" in r: r["ordering"] = "1"
+		topic = database.addTopic(canonicalizeTopic(r["topic"]))
+		student = database.addStudent(r["student"].upper(), r["medium"], r["group"])
+		solution = database.addSolution(student, r["ordering"], topic, r["timing"])
 		return (topic,student,solution)
 	return None
 
@@ -67,7 +77,7 @@ def loadAnswerSet(path, pattern = "default"):
 	if os.path.isfile(path):
 		files = [path]
 	elif os.path.isdir(path):
-		files = glob.glob(path + "/*/*/*")
+		files = glob.glob(path + "/*/*/*.csv")
 	else:
 		msgs.append("\"" + path + "\" is neither a file nor a folder. We assume that it is a file pattern...")
 		files = glob.glob(path)

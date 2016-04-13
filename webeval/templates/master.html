@@ -73,8 +73,9 @@
 				<div class="panel-body">
 				{% for q in queryLog() %}
 					<div class="panel panel-default">
-						<div class="panel-body pre">{{ q.0|trim|replace("?","<span class=\"badge\">?</span>")|safe }}</div>
-						<div class="panel-footer">Arguments: {{ q.1|join(", ") }}</div>
+						<div class="panel-heading">{{ q.0 }}</div>
+						<div class="panel-body pre">{{ q.1|trim|replace("?","<span class=\"badge\">?</span>")|safe }}</div>
+						<div class="panel-footer">Arguments: {{ q.2|join(", ") }}</div>
 					</div>
 				{% endfor %}
 				</div>

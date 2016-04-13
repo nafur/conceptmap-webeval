@@ -1,4 +1,5 @@
 import functools
+import inspect
 import os.path
 import sqlite3
 import sys
@@ -68,8 +69,8 @@ def reset():
 	if os.path.isfile(DBFILE):
 		os.unlink(DBFILE)
 
-def addQueryLog(query, params):
-	queryLog().append((query, params))
+def addQueryLog(caller, query, params):
+	queryLog().append((caller,query, params))
 def queryLog():
 	ql = getattr(request, '_querylog', None)
 	if ql is None:
@@ -87,7 +88,8 @@ def executeFiltered(query, topic = "", timing = "", medium = "", ordering = "", 
 	if verification_exclude != "": f.append(("(verification & ? = 0)", [verification_exclude]))
 	query = query.replace("${FILTER}", " AND ".join(map(lambda x: x[0], f)))
 	params = params_before + sum(map(lambda x: x[1], f), params_after)
-	addQueryLog(query,params)
+	caller = inspect.getouterframes(inspect.currentframe(), 2)[1][3]
+	addQueryLog(caller + "()", query, params)
 	return cursor().execute(query, params)
 
 def addTopic(name):

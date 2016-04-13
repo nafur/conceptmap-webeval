@@ -113,7 +113,7 @@ ORDER BY c1 desc
 
 def nodesPerStudent(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
 	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)
-	res = database.cursor().execute("""
+	query = """
 SELECT
 	ncnt,
 	COUNT(DISTINCT student) AS scnt
@@ -123,11 +123,12 @@ FROM (
 		COUNT(DISTINCT nodes.id) AS ncnt
 	FROM view_answers
 	INNER JOIN nodes ON (nodes.id = src OR nodes.id = dest)
-	WHERE (view_answers.topic=?) AND (timing=? OR %d) AND (medium=? OR %d) AND (ordering=? OR %d) AND (class=? OR %d) AND (verification=? OR %d)
+	WHERE ${FILTER}
 	GROUP BY student
 )
 GROUP BY ncnt
-""" % (timing == "", medium == "", ordering == "", group == "", verification_require == ""), (topic,timing,medium,ordering,group,verification_require)).fetchall()
+"""
+	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
 	lstdata = map(lambda r: [
 		r["ncnt"],
 		"%s (%0.2f%%)" % (r["scnt"], r["scnt"]*100 / core["students"])

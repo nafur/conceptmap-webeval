@@ -8,6 +8,8 @@ DBFILE = "db.sqlite"
 VERIFICATION_FLAGS = ["fully verified", "formally correct", "content-wise correct", "structurally correct", "functionally correct"]
 VERIFICATION_ICONS = [["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"]]
 
+QUERYLOG = []
+
 def createTables():
 	# Table of different topics being tested
 	db().execute('''CREATE TABLE topics (id integer primary key, name text)''')
@@ -68,6 +70,9 @@ def reset():
 	if os.path.isfile(DBFILE):
 		os.unlink(DBFILE)
 
+def queryLog():
+	return QUERYLOG
+
 def executeFiltered(query, topic = "", timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = "", params_before = [], params_after = []):
 	f = []
 	if topic != "": f.append(("(view_answers.topic=?)", [topic]))
@@ -79,6 +84,7 @@ def executeFiltered(query, topic = "", timing = "", medium = "", ordering = "", 
 	if verification_exclude != "": f.append(("(verification & ? = 0)", [verification_exclude]))
 	query = query.replace("${FILTER}", " AND ".join(map(lambda x: x[0], f)))
 	params = params_before + sum(map(lambda x: x[1], f), params_after)
+	QUERYLOG.append((query,params))
 	return cursor().execute(query, params)
 
 def addTopic(name):

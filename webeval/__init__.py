@@ -23,9 +23,9 @@ def inject_default_values():
 		"verifications": database.getVerifications,
 		"orderings": database.listOrderingDict,
 		"core_stats": stats.gatherCoreData,
-		"isSet": lambda single, value: (single & value) == single
+		"isSet": lambda single, value: (single & value) == single,
+		"queryLog": database.queryLog,
 	}
-
 
 import webeval.views.core
 import webeval.views.learn

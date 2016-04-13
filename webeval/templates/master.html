@@ -42,6 +42,15 @@
 		.panel-heading a.collapsed:after {
 			content:"\e080";
 		}
+		.pre {
+			white-space: pre;
+			font-family: monospace;
+			display: block;
+			unicode-bidi: embed;
+		}
+		.pre::before,.pre::after {
+			content: "";
+		}
 {% block style %}{% endblock %}
 		</style>
 	</head>
@@ -55,6 +64,22 @@
 		</nav>
 		<div class="container" style="margin-top: 65px;">
 			{% block content %}{% endblock %}
+
+			{% if queryLog()|length > 0 %}
+			<div class="panel panel-default">
+				<div class="panel-heading">
+					<h3 class="panel-title">Database Query Log</h3>
+				</div>
+				<div class="panel-body">
+				{% for q in queryLog() %}
+					<div class="panel panel-default">
+						<div class="panel-body pre">{{ q.0|trim|replace("?","<span class=\"badge\">?</span>")|safe }}</div>
+						<div class="panel-footer">Arguments: {{ q.1|join(", ") }}</div>
+					</div>
+				{% endfor %}
+				</div>
+			</div>
+			{% endif %}
 		</div>
 	</body>
 </html>

@@ -2,13 +2,11 @@ import functools
 import os.path
 import sqlite3
 import sys
-from flask import g
+from flask import g,request
 
 DBFILE = "db.sqlite"
 VERIFICATION_FLAGS = ["fully verified", "formally correct", "content-wise correct", "structurally correct", "functionally correct"]
 VERIFICATION_ICONS = [["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"]]
-
-QUERYLOG = []
 
 def createTables():
 	# Table of different topics being tested
@@ -70,8 +68,13 @@ def reset():
 	if os.path.isfile(DBFILE):
 		os.unlink(DBFILE)
 
+def addQueryLog(query, params):
+	queryLog().append((query, params))
 def queryLog():
-	return QUERYLOG
+	ql = getattr(request, '_querylog', None)
+	if ql is None:
+		ql = request._querylog = []
+	return ql
 
 def executeFiltered(query, topic = "", timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = "", params_before = [], params_after = []):
 	f = []
@@ -84,7 +87,7 @@ def executeFiltered(query, topic = "", timing = "", medium = "", ordering = "", 
 	if verification_exclude != "": f.append(("(verification & ? = 0)", [verification_exclude]))
 	query = query.replace("${FILTER}", " AND ".join(map(lambda x: x[0], f)))
 	params = params_before + sum(map(lambda x: x[1], f), params_after)
-	QUERYLOG.append((query,params))
+	addQueryLog(query,params)
 	return cursor().execute(query, params)
 
 def addTopic(name):

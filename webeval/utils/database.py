@@ -71,8 +71,8 @@ def reset():
 def executeFiltered(query, topic = "", timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = "", params_before = [], params_after = []):
 	f = []
 	if topic != "": f.append(("(view_answers.topic=?)", [topic]))
-	if timing != "": f.append(("(timing=?)", [timing]))
-	if medium != "": f.append(("(medium=?)", [medium]))
+	if timing != "": f.append(("(timing LIKE ?)", [timing]))
+	if medium != "": f.append(("(medium LIKE ?)", [medium]))
 	if ordering != "": f.append(("(ordering=?)", [ordering]))
 	if group != "": f.append(("(class=?)", [group]))
 	if verification_require != "": f.append(("(verification & ? = ?)", [verification_require,verification_require]))

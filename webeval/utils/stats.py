@@ -88,7 +88,7 @@ WHERE ${FILTER}
 GROUP BY nodes.id
 ORDER BY c1 desc
 """
-	res = database.executeFiltered(query, topic, medium, group, ordering, timing, verification_require, verification_exclude).fetchall()
+	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
 
 	lstdata = map(lambda r: [
 			r["name"],

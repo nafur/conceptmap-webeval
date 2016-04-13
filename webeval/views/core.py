@@ -1,4 +1,4 @@
-from flask import redirect, render_template, request, send_from_directory
+from flask import redirect, render_template, request, safe_join, send_file
 from webeval import app, database, loader
 
 import os.path
@@ -8,8 +8,12 @@ def main():
 	return render_template("index.html")
 
 @app.route("/static/<path:file>")
-def serve_static(path):
-	return send_from_directory('static', path)
+def serve_static(file):
+	res = send_file(safe_join('static', file))
+	res.headers["Cache-Control"] = "no-store,no-cache,must-revalidate,max-age=0"
+	res.headers["Expires"] = "-1"
+	res.headers['Pragma'] = 'no-cache'
+	return res
 
 @app.route("/admin/reset", methods = ["GET","POST"])
 def admin_reset():

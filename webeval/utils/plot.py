@@ -15,7 +15,7 @@ def barplot(filename, data, xlabel, ylabel):
 
     for i in range(cols):
         d = list(map(lambda r: r[1][i], data))
-        r = ax.bar(ind + i*width, d, width, color=colors[i])
+        r = ax.bar(ind + i*width + 0.25, d, width, color=colors[i])
 
     labels = list(map(lambda r: r[0], data))
     if ylabel != None: ax.set_ylabel(ylabel)

@@ -141,16 +141,15 @@ GROUP BY ncnt
 	plt.plot("barplot", "nodesperstudent-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude))
 	plt.description = """This plot shows the number of students that have used a specific number of nodes."""
 
-	res = database.cursor().execute("""
+	query = """
 SELECT
 	COUNT(DISTINCT nodes.id) AS cnt
-FROM answers
-INNER JOIN solutions ON (answers.solution = solutions.id)
-INNER JOIN nodes ON (answers.src = nodes.id OR answers.dest = nodes.id)
-INNER JOIN students ON (solutions.student = students.id)
-WHERE (solutions.topic=?) AND (timing=? OR %d) AND (medium=? OR %d) AND (solutions.ordering=? OR %d) AND (class=? OR %d) AND (verification=? OR %d)
-GROUP BY solutions.student
-""" % (timing == "", medium == "", ordering == "", group == "", verification_require == ""), (topic,timing,medium,ordering,group,verification_require)).fetchall()
+FROM view_answers
+INNER JOIN nodes ON (nodes.id = src OR nodes.id = dest)
+WHERE ${FILTER}
+GROUP BY student
+"""
+	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
 
 	ind = Individual("Stuff")
 	if len(res) > 0:

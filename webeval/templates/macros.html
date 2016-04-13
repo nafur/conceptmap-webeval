@@ -194,6 +194,19 @@
 </ul>
 {% endmacro %}
 
+{% macro show_filter() %}
+<ol class="list-inline pull-right">
+{% for k,v in {"topic": topic, "medium": medium, "group": group, "ordering": ordering, "timing": timing, "required": verification_require, "excluded": verification_exclude }|dictsort %}
+	{% if v %}<li><span class="badge">{{ k }} = {{ v }}</span></li>{% endif %}
+{% endfor %}
+</ol>
+{% endmacro %}
+
+{% macro show_filter_footer() %}
+{{ show_filter() }}
+{{ show_core_stats() }}
+{% endmacro %}
+
 {% macro show_statobject(obj) %}
 	{% if obj.type == "listing" -%}
 	{{ show_listing(obj) }}

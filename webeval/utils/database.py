@@ -237,7 +237,30 @@ def addProgressTransactional(list):
 			action = actionmap[action]
 			cursor().execute("INSERT OR IGNORE INTO progress (solution,ordering,action,src,dest,description) VALUES (?,?,?,?,?,?)", (solution,ordering,action,src,dest,desc))
 
+def delayAnswer(id):
+	with db():
+		cursor().execute("UPDATE answers SET delay = delay + 1 WHERE id = ?", (id,))
+
+def searchVerificationMatch(topic, src, dest, desc):
+	with db():
+		return cursor().execute("SELECT * FROM answers INNER JOIN solutions ON (answers.solution = solutions.id) WHERE verification & 1 = 1 AND topic=? AND src=? AND dest=? AND description LIKE ? GROUP BY description", (topic,src,dest,desc)).fetchall()
+
+def autoVerify():
+	query = """
+REPLACE INTO answers (id, solution, ordering, src, dest, description, verification, delay)
+SELECT a1.id, a1.solution, a1.ordering, a1.src, a1.dest, a1.description, a2.verification, a1.delay
+FROM answers AS a1
+INNER JOIN solutions AS s1 ON (a1.solution = s1.id)
+INNER JOIN answers AS a2 ON (a1.src=a2.src AND a1.dest=a2.dest AND a1.description LIKE a2.description)
+INNER JOIN solutions AS s2 ON (a2.solution = s2.id AND s1.topic = s2.topic)
+WHERE a1.verification=0 AND a2.verification!=0
+LIMIT 1
+"""
+	with db():
+		cursor().execute(query)
+
 def unverifiedAnswers(topic, limit = 10):
+	autoVerify()
 	return cursor().execute("""
 SELECT
 	answers.id AS id,
@@ -256,14 +279,6 @@ WHERE solutions.topic = ? AND answers.verification & 1 = 0
 ORDER BY delay ASC
 LIMIT ?
 	""", (topic,limit)).fetchall()
-
-def delayAnswer(id):
-	with db():
-		cursor().execute("UPDATE answers SET delay = delay + 1 WHERE id = ?", (id,))
-
-def searchVerificationMatch(topic, src, dest, desc):
-	with db():
-		return cursor().execute("SELECT * FROM answers INNER JOIN solutions ON (answers.solution = solutions.id) WHERE verification & 1 = 1 AND topic=? AND src=? AND dest=? AND description LIKE ? GROUP BY description", (topic,src,dest,desc)).fetchall()
 
 def packVerification(args):
 	flag = 0

@@ -6,8 +6,8 @@ import re
 from webeval.utils import database
 
 FILE_PATTERN = {
-	"default": ".*/?(?P<timing>(Vorher|Nachher))/.*_(?P<group>[^_]*)_(?P<medium>(Video|Text))_(?P<ordering>[0-9]+)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
-	"komisch": ".*/?(?P<course>[^/]*)/(?P<group>[^_]*)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
+	"default": ".*/(?P<timing>(Vorher|Nachher))/.*_(?P<group>[^_]*)_(?P<medium>(Video|Text))_(?P<ordering>[0-9]+)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
+	"komisch": ".*/(?P<topicprefix>[^/]*)/(?P<group>[^_]*)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
 }
 
 def patternList():
@@ -26,6 +26,7 @@ def parseFilename(filename, pattern):
 		if not "timing" in r: r["timing"] = "Vorher"
 		if not "medium" in r: r["medium"] = "Text"
 		if not "ordering" in r: r["ordering"] = "1"
+		if "topicprefix" in r: r["topic"] = r["topicprefix"] + " - " + r["topic"]
 		topic = database.addTopic(canonicalizeTopic(r["topic"]))
 		student = database.addStudent(r["student"].upper(), r["medium"], r["group"])
 		solution = database.addSolution(student, r["ordering"], topic, r["timing"])

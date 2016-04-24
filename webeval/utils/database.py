@@ -88,8 +88,11 @@ def executeFiltered(query, topic = "", timing = "", medium = "", ordering = "", 
 	if verification_exclude != "": f.append(("(verification & ? = 0)", [verification_exclude]))
 	query = query.replace("${FILTER}", " AND ".join(map(lambda x: x[0], f)))
 	params = params_before + sum(map(lambda x: x[1], f), params_after)
-	caller = inspect.getouterframes(inspect.currentframe(), 2)[1][3]
-	addQueryLog(caller + "()", query, params)
+	try:
+		caller = inspect.getouterframes(inspect.currentframe(), 2)[1][3]
+		addQueryLog(caller + "()", query, params)
+	except:
+		pass
 	return cursor().execute(query, params)
 
 def addTopic(name):
@@ -142,22 +145,14 @@ def listStudentsByGroup(group):
 def listStudentsByTopic(topic):
 	return cursor().execute("SELECT students.* FROM students LEFT JOIN solutions ON (students.id = solutions.student) WHERE solutions.topic = ? GROUP BY students.id ORDER BY name", (topic,)).fetchall()
 def listStudentsByFilter(topic = "", medium = "", group = "", ordering = "", timing = "", verification_require = "", verification_exclude = ""):
-	return cursor().execute("""
-SELECT students.*
-FROM students
-LEFT JOIN solutions ON (students.id = solutions.student)
-LEFT JOIN answers ON (solutions.id = answers.solution)
-WHERE
-	(solutions.topic=? OR %d) AND
-	(medium=? OR %d) AND
-	(class=? OR %d) AND
-	(solutions.ordering=? OR %d) AND
-	(timing=? OR %d) AND
-	(verification & ? = ? OR %d) AND
-	(verification & ? = 0 OR %d)
-GROUP BY students.id
+	query = """
+SELECT student AS id, name
+FROM view_answers
+WHERE ${FILTER}
+GROUP BY student
 ORDER BY name
-""" % (topic == "", medium == "", group == "", ordering == "", timing == "", verification_require == "", verification_exclude == ""), (topic,medium,group,ordering,timing,verification_require,verification_require,verification_exclude)).fetchall()
+"""
+	return executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
 
 def countStudents(**kwargs):
 	return len(listStudentsByFilter(**kwargs))

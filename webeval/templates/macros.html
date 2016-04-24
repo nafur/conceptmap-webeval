@@ -79,12 +79,18 @@
   {%- endfor %}
 {%- endmacro %}
 
-{% macro start_collapsible_panel(title) %}
+{% macro start_collapsible_panel(title, collapsed = False) %}
+	{% set uid = unique_id() %}
 	<div class="panel-heading">
-		{% set uid = unique_id() %}
+	{% if collapsed %}
+		<h3 class="panel-title"><a class="collapsed" data-toggle="collapse" data-target="#{{ uid }}" href="#{{ uid }}">{{ title }}</a></h3>
+	</div>
+	<div id="{{ uid }}" class="panel-collapse collapse">
+	{% else %}
 		<h3 class="panel-title"><a data-toggle="collapse" data-target="#{{ uid }}" href="#{{ uid }}">{{ title }}</a></h3>
 	</div>
 	<div id="{{ uid }}" class="panel-collapse collapse in">
+	{% endif %}
 		<div class="panel-body">
 {% endmacro %}
 {% macro end_collapsible_panel() %}
@@ -92,7 +98,7 @@
 	</div>
 {% endmacro %}
 
-{% macro show_listing(obj, columns = 2) -%}
+{% macro show_listing(obj, columns = 1) -%}
 {% set colspan = (12 / columns)|int %}
 {% set rowspercol = (obj.body|count / columns)|round(0,'ceil')|int %}
 <div class="panel panel-info">
@@ -140,6 +146,7 @@
 				</table>
 			</div>
 		{% endfor %}
+		</div>
 	{{ end_collapsible_panel() }}
 </div>
 {%- endmacro %}

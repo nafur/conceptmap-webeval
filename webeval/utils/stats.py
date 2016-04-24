@@ -223,7 +223,8 @@ GROUP BY ecnt
 	lst = Listing("Students created n edges", lstdata)
 	lst.setHead(["# edges", ("# students", "colspan=\"2\"")])
 
-	plt = Plot("Students with number of edges", map(lambda r: [r["ecnt"], [r["scnt"]]], res))
+	data = plot.injectMissing([[r["ecnt"], [r["scnt"]]] for r in res])
+	plt = Plot("Students with number of edges", data)
 	plt.setLabels("# nodes", "# students")
 	plt.plot("barplot", "edgesperstudent-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude))
 	plt.description = """This plot shows the number of students that have created a specific number of edges."""

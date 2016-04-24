@@ -33,13 +33,13 @@
 		.panel-heading {
 			font-weight: bold;
 		}
-		.panel-heading a:after {
+		.panel-title > a:after {
 			font-family:'Glyphicons Halflings';
 			content:"\e114";
 			float: right;
 			color: grey;
 		}
-		.panel-heading a.collapsed:after {
+		.panel-title > a.collapsed:after {
 			content:"\e080";
 		}
 		.pre {
@@ -67,10 +67,7 @@
 
 			{% if queryLog()|length > 0 %}
 			<div class="panel panel-warning">
-				<div class="panel-heading">
-					<h3 class="panel-title">Database Query Log</h3>
-				</div>
-				<div class="panel-body">
+				{{ macros.start_collapsible_panel("Database Query Log", true) }}
 				{% for q in queryLog() %}
 					<div class="panel panel-default">
 						<div class="panel-heading">{{ q.0 }}</div>
@@ -78,7 +75,7 @@
 						<div class="panel-footer">Arguments: {{ q.2|join(", ") }}</div>
 					</div>
 				{% endfor %}
-				</div>
+				{{ macros.end_collapsible_panel() }}
 			</div>
 			{% endif %}
 		</div>

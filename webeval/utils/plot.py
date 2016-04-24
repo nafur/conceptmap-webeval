@@ -20,7 +20,7 @@ def barplot(filename, data, xlabel, ylabel):
     n = len(data)
     cols = len(data[0][1])
     ind = numpy.arange(n)
-    fig,ax = plt.subplots()
+    fig,ax = plt.subplots(figsize=(11,6))
     width = 1.0 / (cols+1)
 
     for i in range(cols):
@@ -32,7 +32,7 @@ def barplot(filename, data, xlabel, ylabel):
     if xlabel != None: ax.set_xlabel(xlabel)
     ax.xaxis.set_ticks(numpy.arange(0, len(labels), 1) + 0.5)
     #todo: use wrap=False
-    ax.set_xticklabels(labels, rotation=25, ha="right", size="small")
+    ax.set_xticklabels(labels, rotation=75, ha="center", size="small")
 
     plt.subplots_adjust(left=0.125, right=0.9, top=0.9, bottom=0.2)
     plt.savefig("webeval/static/plots/" + filename)

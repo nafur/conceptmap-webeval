@@ -57,6 +57,14 @@ def db():
 			createTables()
 	return db
 
+def openMergedDB(filename):
+	db = sqlite3.connect(':memory:')
+	db.row_factory = sqlite3.Row
+	c = db.cursor()
+	c.execute("ATTACH DATABASE '%s' AS db1" % DBFILE)
+	c.execute("ATTACH DATABASE '%s' AS db2" % filename)
+	return db
+
 def close():
 	db = getattr(g, '_database', None)
 	if db is not None:

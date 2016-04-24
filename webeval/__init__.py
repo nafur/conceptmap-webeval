@@ -1,7 +1,7 @@
 from flask import Flask, request
 app = Flask(__name__, static_folder = None)
 
-from webeval.utils import database, learner, loader, stats
+from webeval.utils import database, dbcompare, learner, loader, stats
 
 @app.teardown_appcontext
 def close(exception):

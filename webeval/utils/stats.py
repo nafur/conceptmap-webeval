@@ -94,20 +94,21 @@ ORDER BY c1 desc
 
 	lstdata = [[
 			r["name"],
-			"%s" % r["c1"],
-			"%0.2f%%" % (r["c1"]*100 / core["students"]),
-			"%s (%0.2f per student)" % (r["c3"], r["c3"] / core["students"])
+			("%s" % r["c1"], "style=\"border-right: 0px;\""),
+			("%0.2f%%" % (r["c1"]*100 / core["students"]), "style=\"border-left: 0px;\""),
+			("%s" % r["c3"], "style=\"border-right: 0px;\""),
+			("%0.2f" % (r["c3"] / core["students"]), "style=\"border-left: 0px;\" class=\"after_perstudent\""),
 		] for r in res]
 	lst = Listing("Node usage", lstdata)
 	lst.setHead([
 		"Node",
 		("Used by n students", "colspan=\"2\""),
-		"Used in n connections"
+		("Used in n connections", "colspan=\"2\""),
 	])
 	if len(res) > 0:
 		lst.setFoot(["Average",
 			("%0.2f ±%0.2f" % (mean(res, lambda x: x["c1"]), pstdev(res, lambda x: x["c1"])), "colspan=\"2\""),
-			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c3"]), pstdev(res, lambda x: x["c3"])),
+			("%0.2f ±%0.2f" % (mean(res, lambda x: x["c3"]), pstdev(res, lambda x: x["c3"])), "colspan=\"2\""),
 		])
 	plt = Plot("Node usage", map(lambda r: [r["name"], [r["c1"]]], res))
 	plt.setLabels(None, "# usages")

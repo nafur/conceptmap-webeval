@@ -1,5 +1,5 @@
 from flask import redirect, render_template, request, safe_join, send_file
-from webeval import app, database, loader
+from webeval import app, database, dbcompare, loader
 
 import os.path
 
@@ -43,8 +43,16 @@ def browseFiles(path):
 
 	return render_template("admin/import_selection.html", pattern = loader.patternList(), patternDefault = loader.patternDefault(), parent = parent, curpath = path, files = files, dirs = dirs, breadcrumbs = breadcrumbs)
 
-@app.route("/admin/import/<path:path>", methods=["POST"])
+@app.route("/admin/import/<path:path>", methods = ["POST"])
 def importFiles(path):
 	abs_path = os.path.join(os.path.expanduser("~"), path)
 	msgs,success,failed = loader.loadAnswerSet(abs_path, request.form["pattern"])
 	return render_template("admin/import_done.html", messages = msgs, success = success, failed = failed, path = path)
+
+@app.route("/admin/compare", methods = ["GET", "POST"])
+def admin_compare():
+	if request.method == "POST":
+		filename = request.form.get('file', '')
+		return render_template("admin/compare.html", res = dbcompare.compareWith(filename), filename = filename)
+	else:
+		return render_template("admin/compare.html")

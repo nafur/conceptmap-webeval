@@ -35,6 +35,8 @@ class Listing:
 		self.name = name
 		self.body = body
 		self.description = None
+	def get(self, row):
+		return self.body[row]
 	def setHead(self, head):
 		self.head = head
 	def setFoot(self, foot):
@@ -90,20 +92,21 @@ ORDER BY c1 desc
 """
 	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
 
-	lstdata = map(lambda r: [
+	lstdata = [[
 			r["name"],
-			"%s (%0.2f%%)" % (r["c1"], r["c1"]*100 / core["students"]),
+			"%s" % r["c1"],
+			"%0.2f%%" % (r["c1"]*100 / core["students"]),
 			"%s (%0.2f per student)" % (r["c3"], r["c3"] / core["students"])
-		], res)
+		] for r in res]
 	lst = Listing("Node usage", lstdata)
 	lst.setHead([
 		"Node",
-		"Used by n students",
+		("Used by n students", "colspan=\"2\""),
 		"Used in n connections"
 	])
 	if len(res) > 0:
 		lst.setFoot(["Average",
-			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c1"]), pstdev(res, lambda x: x["c1"])),
+			("%0.2f ±%0.2f" % (mean(res, lambda x: x["c1"]), pstdev(res, lambda x: x["c1"])), "colspan=\"2\""),
 			"%0.2f ±%0.2f" % (mean(res, lambda x: x["c3"]), pstdev(res, lambda x: x["c3"])),
 		])
 	plt = Plot("Node usage", map(lambda r: [r["name"], [r["c1"]]], res))
@@ -129,14 +132,16 @@ FROM (
 GROUP BY ncnt
 """
 	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
-	lstdata = map(lambda r: [
+	lstdata = [[
 		r["ncnt"],
-		"%s (%0.2f%%)" % (r["scnt"], r["scnt"]*100 / core["students"])
-	], res)
+		"%s" % r["scnt"],
+		"%0.2f%%" % (r["scnt"]*100 / core["students"])
+	] for r in res]
 	lst = Listing("Students using n nodes", lstdata)
-	lst.setHead(["# nodes", "# students"])
+	lst.setHead(["# nodes", ("# students", "colspan=\"2\"")])
 
-	plt = Plot("Students with number of nodes", map(lambda r: [r["ncnt"], [r["scnt"]]], res))
+	data = plot.injectMissing([ [r["ncnt"], [r["scnt"]]] for r in res])
+	plt = Plot("Students with number of nodes", data)
 	plt.setLabels("# nodes", "# students")
 	plt.plot("barplot", "nodesperstudent-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude))
 	plt.description = """This plot shows the number of students that have used a specific number of nodes."""
@@ -191,6 +196,51 @@ GROUP BY nsrc.id,ndst.id
 	table.append(map(lambda x: "%0.2f" % x, newRow))
 	tbl = Table("Edge usage", nodes, nodes, table)
 	return [tbl]
+
+def collectEdgesPerStudent(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
+	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)
+	query = """
+SELECT
+	ecnt,
+	COUNT(DISTINCT student) AS scnt
+FROM (
+	SELECT
+		student,
+		COUNT(DISTINCT id) AS ecnt
+	FROM view_answers
+	WHERE ${FILTER}
+	GROUP BY student
+)
+GROUP BY ecnt
+"""
+	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
+
+	lstdata = [[
+		r["ecnt"],
+		"%s" % r["scnt"],
+		"%0.2f%%" % (r["scnt"]*100 / core["students"])
+	] for r in res]
+	lst = Listing("Students created n edges", lstdata)
+	lst.setHead(["# edges", ("# students", "colspan=\"2\"")])
+
+	plt = Plot("Students with number of edges", map(lambda r: [r["ecnt"], [r["scnt"]]], res))
+	plt.setLabels("# nodes", "# students")
+	plt.plot("barplot", "edgesperstudent-%s-%s-%s-%s-%s-%s-%s.png" % (topic,group,timing,medium,ordering,verification_require,verification_exclude))
+	plt.description = """This plot shows the number of students that have created a specific number of edges."""
+
+	query = """
+SELECT
+	COUNT(DISTINCT view_answers.id) AS cnt
+FROM view_answers
+WHERE ${FILTER}
+GROUP BY student
+"""
+	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
+	ind = Individual("Stuff")
+	if len(res) > 0:
+		avg,dev = mean(res, lambda x: x["cnt"]), pstdev(res, lambda x: x["cnt"])
+		ind.add("Edges created by students", "%0.2f ±%0.2f" % (avg,dev), "The average student created %0.2f edges." % avg)
+	return [lst,plt,ind]
 
 def collectEdgeCorrect(topic, timing = None, medium = None, verification = None):
 	core = gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude)

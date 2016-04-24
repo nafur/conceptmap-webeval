@@ -28,6 +28,7 @@ def stats_edgeusage():
 	if request.method == "POST":
 		kwargs = getFilterSettings(request.form)
 		obj = stats.collectEdgeUsedCounts(**kwargs)
+		obj = obj + stats.collectEdgesPerStudent(**kwargs)
 		kwargs.update({"obj": obj})
 	return render_template("stats/edgeusage.html", **kwargs)
 

@@ -3,6 +3,16 @@ import numpy
 
 colors = ["b", "r", "g"]
 
+def injectMissing(data, columns = 1):
+    minlabel = min(data, key = lambda x: x[0])[0]
+    maxlabel = max(data, key = lambda x: x[0])[0]
+    labels = range(minlabel, maxlabel + 1)
+    ddata = {x[0]: x[1] for x in data}
+    for l in labels:
+        if l not in ddata:
+            ddata[l] = [0] * columns
+    return [ [l, ddata[l]] for l in labels]
+
 def barplot(filename, data, xlabel, ylabel):
     data = list(data)
     if data == []:

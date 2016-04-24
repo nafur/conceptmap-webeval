@@ -92,36 +92,54 @@
 	</div>
 {% endmacro %}
 
-{% macro show_listing(obj) -%}
+{% macro show_listing(obj, columns = 2) -%}
+{% set colspan = (12 / columns)|int %}
+{% set rowspercol = (obj.body|count / columns)|round(0,'ceil')|int %}
 <div class="panel panel-info">
 	{{ start_collapsible_panel(obj.name) }}
-		<table class="table table-striped table-condensed" style="margin-bottom: 0px;">
-			{% if obj.head %}
-			<thead>
-				{% for h in obj.head -%}
-				<th>{{ h }}</th>
-				{% endfor %}
-			</thead>
-			{% endif %}
-			<tbody>
-				{% for row in obj.body -%}
-				<tr>
-					{% for item in row -%}
-					<td>{{ item }}</td>
-					{% endfor %}
-				</tr>
-				{% endfor %}
-			</tbody>
-			{% if obj.foot %}
-			<tfoot>
-				<tr>
-					{% for item in obj.foot -%}
-					<th>{{ item }}</th>
-					{% endfor %}
-				</tr>
-			</tfoot>
-			{% endif %}
-		</table>
+		<div class="row">
+		{% for c in range(columns) %}
+			<div class="col-md-{{ colspan }}">
+				<table class="table table-striped table-condensed" style="margin-bottom: 0px;">
+					{% if obj.head %}
+					<thead>
+						{% for h in obj.head -%}
+						{% if h is string %}
+							<th>{{ h }}</th>
+						{% else %}
+							<th {{ h.1|safe }}>{{ h.0 }}</th>
+						{% endif %}
+						{% endfor %}
+					</thead>
+					{% endif %}
+					<tbody>
+						{% set start = c*rowspercol %}
+						{% set stop = (c+1)*rowspercol %}
+						{% if stop > obj.body|count %}{% set stop = obj.body|count %}{% endif %}
+						{% for r in range(start, stop) %}
+						<tr>
+							{% for item in obj.get(r) -%}
+							<td>{{ item }}</td>
+							{% endfor %}
+						</tr>
+						{% endfor %}
+					</tbody>
+					{% if loop.last and obj.foot %}
+					<tfoot>
+						<tr>
+							{% for item in obj.foot -%}
+							{% if item is string %}
+								<th>{{ item }}</th>
+							{% else %}
+								<th {{ item.1|safe }}>{{ item.0 }}</th>
+							{% endif %}
+							{% endfor %}
+						</tr>
+					</tfoot>
+					{% endif %}
+				</table>
+			</div>
+		{% endfor %}
 	{{ end_collapsible_panel() }}
 </div>
 {%- endmacro %}

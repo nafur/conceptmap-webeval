@@ -186,7 +186,7 @@ def getNode(id):
 	return cursor().execute("SELECT * FROM nodes WHERE id=?", (id,)).fetchone()
 
 def listNodes(topic):
-	return cursor().execute("SELECT * FROM nodes WHERE topic=?", (topic,)).fetchall()
+	return cursor().execute("SELECT * FROM nodes WHERE topic=? ORDER BY name", (topic,)).fetchall()
 
 def countNodes(topic):
 	return len(listNodes(topic))

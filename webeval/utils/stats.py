@@ -163,24 +163,32 @@ def collectEdgeUsedCounts(topic, timing = "", medium = "", ordering = "", group 
 	nm = {}
 	for n in nodes: nm[n["id"]] = len(nm)
 	nodes = list(map(lambda n: n["name"], nodes))
-	res = database.cursor().execute("""
-SELECT n1.id,n2.id,answers.*
-FROM nodes AS n1, nodes AS n2
-INNER JOIN answers ON (n1.id = answers.src AND n2.id = answers.dest)
-LEFT JOIN solutions ON (answers.solution = solutions.id)
-LEFT JOIN students ON (solutions.student = students.id)
-WHERE n1.topic = ? AND n2.topic = ? AND (timing=? OR %d) AND (medium=? OR %d) AND (verification = ? OR %d)
-""" % (timing == "", medium == "", verification_require == ""), (topic,topic,timing,medium,verification_require)).fetchall()
+
+	query = """
+SELECT
+	nsrc.id AS src,
+	ndst.id AS dst,
+	COUNT(DISTINCT view_answers.id) AS cnt
+FROM view_answers
+INNER JOIN nodes AS nsrc ON (nsrc.id = src)
+INNER JOIN nodes AS ndst ON (ndst.id = dest)
+WHERE ${FILTER}
+GROUP BY nsrc.id,ndst.id
+"""
+	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
+
 	table = [([0] * len(nodes)) for n in nodes]
 	for row in res:
-		table[nm[row[0]]][nm[row[1]]] += 1
+		table[nm[row["src"]]][nm[row["dst"]]] = row["cnt"]
+
 	nodes.append("Average")
 	for row in table:
-		row.append("%0.2f ±%0.2f" % (mean(row), pstdev(row)))
+		row.append("%0.2f" % (sum(row) / core["students"]))
 	newRow = []
 	for col in range(len(table[0])-1):
-		newRow.append("%0.2f ±%0.2f" % (mean(table, lambda x: x[col]), pstdev(table, lambda x: x[col])))
-	table.append(newRow + [""])
+		newRow.append(sum(map(lambda x: x[col], table)) / core["students"])
+	newRow.append(sum(newRow))
+	table.append(map(lambda x: "%0.2f" % x, newRow))
 	tbl = Table("Edge usage", nodes, nodes, table)
 	return [tbl]
 

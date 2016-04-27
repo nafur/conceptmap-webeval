@@ -1,0 +1,50 @@
+{% extends 'master.html' %}
+{% block content %}
+
+<div class="panel panel-primary">
+	<div class="panel-heading">Compare with other database</div>
+	<div class="panel-body">
+		<form action="/admin/compare" method="POST" >
+			<div class="form-group">
+				<label for="file">Database file</label>
+				<input type="file" name="file" value="{{ filename }}" />
+			</div>
+
+			<button type="submit" class="btn btn-primary">Compare with selected database.</button>
+			<a href="/" class="btn btn-default">Abort.</a>
+		</form>
+	</div>
+</div>
+
+{% if res %}
+<div class="panel panel-success">
+	<div class="panel-heading">
+		<h3 class="panel-title">Comparing with other database {{ filename }}</h3>
+	</div>
+	<div class="panel-body">
+		<div class="row">
+{% for flag,data in res|dictsort %}
+			<div class="col-md-4">
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">{{ flag }}</h3>
+					</div>
+					<div class="panel-body">
+						Cohen's kappa: {{ data.kappa }}
+					</div>
+					<div class="panel-footer">
+						<ul class="list-inline" style="margin-bottom: 0px;">
+							{% for k,v in data|dictsort %}
+							<li><span class="badge">{{ k }} = {{ v }}</span></li>
+							{% endfor %}
+						</ul>
+					</div>
+				</div>
+			</div>
+{% endfor %}
+		</div>
+	</div>
+</div>
+{% endif %}
+
+{% endblock %}

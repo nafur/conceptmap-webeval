@@ -1,13 +1,16 @@
+import builtins
+import subprocess
 from flask import Flask, request
 app = Flask(__name__, static_folder = None)
 
-from webeval.utils import database, dbcompare, learner, loader, stats
-import subprocess
-
+builtins.VERSION = 0.1
 def getVersion():
-	r = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("utf8")
-	if r == "": return "v%s @ %s" % (database.DBVERSION, database.DBDATE)
-	return "#%s v%s @ %s" % (r[:8], database.DBVERSION, database.DBDATE)
+	commitdate = open("webeval/.commit-date").read()
+	r = subprocess.check_output(["git", "rev-parse", "HEAD"], stderr = subprocess.PIPE).decode("utf8")
+	if r == "": return "v%s @ %s" % (VERSION, commitdate)
+	return "v%s @ %s / #%s" % (VERSION, commitdate, r[:8])
+
+from webeval.utils import database, dbcompare, learner, loader, stats
 
 @app.teardown_appcontext
 def close(exception):

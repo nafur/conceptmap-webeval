@@ -5,7 +5,6 @@ import sqlite3
 import sys
 from flask import g,request
 
-VERSION = 0.1
 DBFILE = "db.sqlite"
 VERIFICATION_FLAGS = ["fully verified", "formally correct", "content-wise correct", "structurally correct", "functionally correct"]
 VERIFICATION_ICONS = [["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"]]

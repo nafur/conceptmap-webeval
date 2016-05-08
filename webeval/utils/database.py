@@ -5,11 +5,14 @@ import sqlite3
 import sys
 from flask import g,request
 
+VERSION = 0.1
 DBFILE = "db.sqlite"
 VERIFICATION_FLAGS = ["fully verified", "formally correct", "content-wise correct", "structurally correct", "functionally correct"]
 VERIFICATION_ICONS = [["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"]]
 
 def createTables():
+	db().execute('''CREATE TABLE config (name text, value text)''')
+	db().execute('''INSERT INTO config (name,value) VALUES (?,?)''', ("version",VERSION))
 	# Table of different topics being tested
 	db().execute('''CREATE TABLE topics (id integer primary key, name text)''')
 	# Table of all the nodes (or terms) that must be connected. Each node is associated with a topic.

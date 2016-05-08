@@ -227,7 +227,7 @@ GROUP BY ecnt
 	if len(res) == 0: return []
 
 	lstdata = [[
-		r["ecnt"],
+		"%d" % r["ecnt"],
 		"%s" % r["scnt"],
 		"%0.2f%%" % (r["scnt"]*100 / core["students"])
 	] for r in res]

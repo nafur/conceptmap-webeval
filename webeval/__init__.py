@@ -2,6 +2,12 @@ from flask import Flask, request
 app = Flask(__name__, static_folder = None)
 
 from webeval.utils import database, dbcompare, learner, loader, stats
+import subprocess
+
+def getVersion():
+	r = subprocess.check_output(["git", "rev-parse", "HEAD"]).decode("utf8")
+	if r == "": return "v%s @ %s" % (database.DBVERSION, database.DBDATE)
+	return "#%s v%s @ %s" % (r[:8], database.DBVERSION, database.DBDATE)
 
 @app.teardown_appcontext
 def close(exception):
@@ -25,6 +31,7 @@ def inject_default_values():
 		"core_stats": stats.gatherCoreData,
 		"isSet": lambda single, value: (single & value) == single,
 		"queryLog": database.queryLog,
+		"version": getVersion,
 	}
 
 import webeval.views.core

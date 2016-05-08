@@ -142,7 +142,7 @@ GROUP BY ncnt
 	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
 	if len(res) == 0: return []
 	lstdata = [[
-		r["ncnt"],
+		"%s" % r["ncnt"],
 		"%s" % r["scnt"],
 		"%0.2f%%" % (r["scnt"]*100 / core["students"])
 	] for r in res]

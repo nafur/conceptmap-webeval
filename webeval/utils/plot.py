@@ -4,6 +4,7 @@ import numpy
 colors = ["b", "r", "g"]
 
 def injectMissing(data, columns = 1):
+    if data == []: return []
     minlabel = min(data, key = lambda x: x[0])[0]
     maxlabel = max(data, key = lambda x: x[0])[0]
     labels = range(minlabel, maxlabel + 1)

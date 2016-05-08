@@ -29,6 +29,12 @@ def printUsages(data, desc, key, str):
 def gatherCoreData(topic, medium, group, ordering, timing, verification_require, verification_exclude):
 	return {"students": database.countStudents(topic=topic, medium=medium, group=group, ordering=ordering, timing=timing, verification_require=verification_require, verification_exclude=verification_exclude)}
 
+class Empty:
+	type = "empty"
+	def __init__(self, name):
+		self.name = "Query returned no results"
+		self.description = "The filter settings above did not let any data pass for \"%s\" report." % name
+
 class Listing:
 	type = "listing"
 	def __init__(self, name, body):
@@ -91,6 +97,7 @@ GROUP BY nodes.id
 ORDER BY c1 desc
 """
 	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
+	if len(res) == 0: return [Empty("Node usage")]
 
 	lstdata = [[
 			r["name"],
@@ -133,6 +140,7 @@ FROM (
 GROUP BY ncnt
 """
 	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
+	if len(res) == 0: return []
 	lstdata = [[
 		r["ncnt"],
 		"%s" % r["scnt"],
@@ -182,6 +190,7 @@ WHERE ${FILTER}
 GROUP BY nsrc.id,ndst.id
 """
 	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
+	if len(res) == 0: return [Empty("Edge usage")]
 
 	table = [([0] * len(nodes)) for n in nodes]
 	for row in res:
@@ -215,6 +224,7 @@ FROM (
 GROUP BY ecnt
 """
 	res = database.executeFiltered(query, topic, timing, medium, ordering, group, verification_require, verification_exclude).fetchall()
+	if len(res) == 0: return []
 
 	lstdata = [[
 		r["ecnt"],

@@ -98,6 +98,17 @@
 	</div>
 {% endmacro %}
 
+{% macro show_empty(obj) -%}
+<div class="panel panel-danger">
+	{{ start_collapsible_panel(obj.name) }}
+		<p>{{ obj.description }}</p>
+	</div>
+	<div class="panel-footer">
+		{{ show_filter("") }}
+	{{ end_collapsible_panel() }}
+</div>
+{% endmacro %}
+
 {% macro show_listing(obj, columns = 1) -%}
 {% set colspan = (12 / columns)|int %}
 {% set rowspercol = (obj.body|count / columns)|round(0,'ceil')|int %}
@@ -223,8 +234,8 @@
 </ul>
 {% endmacro %}
 
-{% macro show_filter() %}
-<ol class="list-inline pull-right">
+{% macro show_filter(class = "pull-right") %}
+<ol class="list-inline {{ class }}" style="margin-bottom: 0px;">
 {% for k,v in {"topic": topic, "medium": medium, "group": group, "ordering": ordering, "timing": timing, "required": verification_require, "excluded": verification_exclude }|dictsort %}
 	{% if v %}<li><span class="badge">{{ k }} = {{ v }}</span></li>{% endif %}
 {% endfor %}
@@ -245,8 +256,10 @@
 	{{ show_plot(obj) }}
 	{%- elif obj.type == "individual" -%}
 		{% if obj.notEmpty %}{{ show_individual(obj) }}{% endif %}
+	{%- elif obj.type == "empty" -%}
+	{{ show_empty(obj) }}
 	{%- else -%}
-	<div class="panel panel-warn">
+	<div class="panel panel-warning">
 		<div class="panel-heading">{{ obj.name }}</div>
 		<div class="panel-body">Invalid object type {{ obj.type }}</div>
 	</div>

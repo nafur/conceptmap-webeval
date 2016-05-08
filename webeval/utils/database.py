@@ -81,7 +81,7 @@ def reset():
 
 def getVersion():
 	try:
-		return db().execute("SELECT value FROM config WHERE name='version'").fetchall()
+		return db().execute("SELECT value FROM config WHERE name='version'").fetchone()["value"]
 	except:
 		return "before-versioning"
 

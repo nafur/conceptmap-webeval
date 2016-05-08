@@ -7,7 +7,10 @@ builtins.VERSION = "0.1"
 def getCommitDate():
 	return open("webeval/.commit-date").read()
 def getCommitHash():
-	return subprocess.check_output(["git", "rev-parse", "HEAD"], stderr = subprocess.PIPE).decode("utf8")[:8]
+	try:
+		return subprocess.check_output(["git", "rev-parse", "HEAD"], stderr = subprocess.PIPE).decode("utf8")[:8]
+	except:
+		return ""
 def getVersionString():
 	h = getCommitHash()
 	if h == "": return "v%s @ %s" % (VERSION, getCommitDate())

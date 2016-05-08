@@ -265,7 +265,7 @@ INNER JOIN solutions AS s1 ON (a1.solution = s1.id)
 INNER JOIN answers AS a2 ON (a1.src=a2.src AND a1.dest=a2.dest AND a1.description LIKE a2.description)
 INNER JOIN solutions AS s2 ON (a2.solution = s2.id AND s1.topic = s2.topic)
 WHERE a1.verification=0 AND a2.verification!=0
-LIMIT 1
+GROUP BY a1.id
 """
 	with db():
 		cursor().execute(query)

@@ -3,14 +3,22 @@ import subprocess
 from flask import Flask, request
 app = Flask(__name__, static_folder = None)
 
-builtins.VERSION = 0.1
-def getVersion():
-	commitdate = open("webeval/.commit-date").read()
-	r = subprocess.check_output(["git", "rev-parse", "HEAD"], stderr = subprocess.PIPE).decode("utf8")
-	if r == "": return "v%s @ %s" % (VERSION, commitdate)
-	return "v%s @ %s / #%s" % (VERSION, commitdate, r[:8])
+builtins.VERSION = "0.1"
+def getCommitDate():
+	return open("webeval/.commit-date").read()
+def getCommitHash():
+	return subprocess.check_output(["git", "rev-parse", "HEAD"], stderr = subprocess.PIPE).decode("utf8")[:8]
+def getVersionString():
+	h = getCommitHash()
+	if h == "": return "v%s @ %s" % (VERSION, getCommitDate())
+	return "v%s @ %s / #%s" % (VERSION, getCommitDate(), h)
 
 from webeval.utils import database, dbcompare, learner, loader, stats
+
+def getDBVersionState():
+	dbversion = database.getVersion()
+	if dbversion == VERSION: return ""
+	return dbversion
 
 @app.teardown_appcontext
 def close(exception):
@@ -34,7 +42,11 @@ def inject_default_values():
 		"core_stats": stats.gatherCoreData,
 		"isSet": lambda single, value: (single & value) == single,
 		"queryLog": database.queryLog,
-		"version": getVersion,
+		"version": VERSION,
+		"version_date": getCommitDate,
+		"version_hash": getCommitHash,
+		"version_string": getVersionString,
+		"dbversion": getDBVersionState,
 	}
 
 import webeval.views.core

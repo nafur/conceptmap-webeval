@@ -79,6 +79,12 @@ def reset():
 	if os.path.isfile(DBFILE):
 		os.unlink(DBFILE)
 
+def getVersion():
+	try:
+		return db().execute("SELECT value FROM config WHERE name='version'").fetchall()
+	except:
+		return "before-versioning"
+
 def addQueryLog(caller, query, params):
 	queryLog().append((caller,query, params))
 def queryLog():

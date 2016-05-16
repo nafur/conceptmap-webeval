@@ -7,7 +7,7 @@ td.last,th.last {
 {% endblock %}
 {% block content %}
 <div class="panel panel-primary">
-	<div class="panel-heading"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Learn new results for <strong>{{ topic.name }}</strong></div>
+	<div class="panel-heading">{{ macros.icon("edit") }} Learn new results for <strong>{{ topic.name }}</strong></div>
 	<div class="panel-body">
 		<table class="table table-striped table-bordered">
 			<thead>
@@ -28,7 +28,7 @@ td.last,th.last {
 					<td class="last">
 						{% for v in c.verification %}
 							{% if not loop.first %}
-							<a href="/learn/toggle/{{ topic.id }}/{{ c.id }}/{{ v.0 }}"><span class="glyphicon glyphicon-{{ v.1 }}" aria-hidden="true" title="{{ v.0 }}"></span></a>
+							<a href="/learn/toggle/{{ topic.id }}/{{ c.id }}/{{ v.0 }}">{{ macros.icon(v.1, v.0) }}</a>
 							{% endif %}
 						{% endfor %}
 						{% if c.delay %}
@@ -36,10 +36,10 @@ td.last,th.last {
 						{% endif %}
 					</td>
 					<td class="last">
-						<a href="/learn/{{ topic.id }}/{{ c.id }}"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> edit</a>
-						<a href="/learn/delay/{{ topic.id }}/{{ c.id }}"><span class="glyphicon glyphicon-new-window" aria-hidden="true"></span> delay</a>
+						<a href="/learn/{{ topic.id }}/{{ c.id }}">{{ macros.icon("edit") }} edit</a>
+						<a href="/learn/delay/{{ topic.id }}/{{ c.id }}">{{ macros.icon("new-window") }} delay</a>
 						<form method="POST" action="/learn/verify/{{ topic.id }}/{{ c.id }}" style="display: inline;">
-							<button type="submit" class="btn btn-link" style="padding: 0px;"><span class="glyphicon glyphicon-ok" aria-hidden="true"></span> verify</button>
+							<button type="submit" class="btn btn-link" style="padding: 0px;">{{ macros.icon("ok") }} verify</button>
 						</form>
 					</td>
 				</tr>

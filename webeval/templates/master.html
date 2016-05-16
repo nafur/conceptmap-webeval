@@ -61,11 +61,11 @@
 		<nav class="navbar navbar-inverse navbar-fixed-top">
 			<div class="container">
 				<ul class="nav navbar-nav">
-					<li><a href="/"><span class="glyphicon glyphicon-home" aria-hidden="true"></span> Home</a></li>
+					<li><a href="/">{{ macros.icon("home") }} Home</a></li>
 				</ul>
 				<ul class="nav navbar-nav pull-right">
 {% if dbversionstate() %}
-					<li><a href="#"><span class="text-warning glyphicon glyphicon-warning-sign"></span> <strong class="text-warning">DB: {{ dbversion() }}</strong></a></li>
+					<li><a href="#">{{ macros.icon("warning-sign") }} <strong class="text-warning">DB: {{ dbversion() }}</strong></a></li>
 {% endif %}
 					<li><a href="#">{{ version_string() }}</a></li>
 				</ul>

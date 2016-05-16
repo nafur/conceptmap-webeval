@@ -28,10 +28,10 @@
 		</p>
 		<p>
 			{% if parent %}
-			<a href="/admin/browse/{{ parent }}" class="btn btn-default"><span class="glyphicon glyphicon-chevron-up" /> ..</a>
+			<a href="/admin/browse/{{ parent }}" class="btn btn-default">{{ macros.icon("chevron-up") }} ..</a>
 			{% endif %}
 			{% for dir,path in dirs|dictsort %}
-			<a href="/admin/browse/{{ path }}" class="btn btn-default"><span class="glyphicon glyphicon-chevron-right" /> {{ dir }}</a>
+			<a href="/admin/browse/{{ path }}" class="btn btn-default">{{ macros.icon("chevron-right") }} {{ dir }}</a>
 			{% endfor %}
 		</p>
 		<p>This directory contains the following files: {{ files }}</p>

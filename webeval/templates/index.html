@@ -15,12 +15,12 @@
 	</div>
 	<div class="col-md-6">
 		<div class="panel panel-warning">
-			<div class="panel-heading"><span class="glyphicon glyphicon-warning-sign" aria-hidden="true"></span> Administration</div>
+			<div class="panel-heading">{{ macros.icon("warning-sign") }} Administration</div>
 			<div class="panel-body">
 				<div class="btn-group" role="group">
-					<a href="/admin/reset" class="btn btn-default" class="btn btn-default"><span class="glyphicon glyphicon-repeat" aria-hidden="true"></span> Reset database</a>
-					<a href="/admin/upgrade" class="btn btn-default" class="btn btn-default"><span class="glyphicon glyphicon-wrench" aria-hidden="true"></span> Upgrade database</a>
-					<a href="/admin/browse" class="btn btn-default" class="btn btn-default">Import results</a>
+					<a href="/admin/reset" class="btn btn-default" class="btn btn-default">{{ macros.icon("repeat") }} Reset database</a>
+					<a href="/admin/upgrade" class="btn btn-default" class="btn btn-default">{{ macros.icon("wrench") }} Upgrade database</a>
+					<a href="/admin/browse" class="btn btn-default" class="btn btn-default">{{ macros.icon("import") }} Import results</a>
 					<a href="/admin/compare" class="btn btn-default" class="btn btn-default">Compare Databases</a>
 				</div>
 			</div>
@@ -30,7 +30,7 @@
 <div class="row">
 	<div class="col-md-6">
 		<div class="panel panel-default">
-			<div class="panel-heading"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Learn new results</div>
+			<div class="panel-heading">{{ macros.icon("edit") }} Learn new results</div>
 			<div class="panel-body">
 				<div class="btn-group-vertical" role="group">
 				{% for name,desc in topics()|dictsort %}
@@ -42,7 +42,7 @@
 	</div>
 	<div class="col-md-6">
 		<div class="panel panel-default">
-			<div class="panel-heading"><span class="glyphicon glyphicon-edit" aria-hidden="true"></span> Export stuff</div>
+			<div class="panel-heading">{{ macros.icon("export") }} Export stuff</div>
 			<div class="panel-body">
 				<div class="btn-group-vertical" role="group">
 					<a href="/export/todot" class="btn btn-default" class="btn btn-default">Export dot</a>

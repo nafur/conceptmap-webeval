@@ -1,3 +1,7 @@
+{% macro icon(name, tooltip = "") -%}
+<span class="glyphicon glyphicon-{{ name }}" aria-hidden="true" title="{{ tooltip }}"></span>
+{%- endmacro %}
+
 {% macro input_dropdown(name, label, map, default) -%}
 <div class="form-group">
 	<label for="{{ name }}">{{ label }}</label>

@@ -1,13 +1,14 @@
 from webeval.utils import database
 
 def upgradeFrom(baseVersion):
-	msgs = []
+	msgs = ["Upgrading from \"%s\"..." % baseVersion]
 	if baseVersion == "before-versioning":
 		msgs += createAnswerView()
 		msgs += createConfigTable()
 		setVersion("0.1")
 	elif baseVersion == "0.1":
 		msgs += createTopicShortcode()
+		msgs += addConfigPK()
 		setVersion("0.2")
 	else:
 		msgs.append("Upgrade from version %s is not implemented." % baseVersion)
@@ -33,7 +34,7 @@ def tableExists(name, type = "table"):
 def columnExists(table, name):
 	cols = database.db().execute("PRAGMA table_info('%s')" % table).fetchall()
 	cols = filter(lambda r: r["name"] == name, cols)
-	return len(cols) > 0
+	return len(list(cols)) > 0
 
 def createAnswerView():
 	if tableExists('view_answers', 'view'):
@@ -73,3 +74,11 @@ def createTopicShortcode():
 	database.db().execute('''ALTER TABLE topics ADD COLUMN shortcode text''')
 	database.db().exeucte('''UPDATE topics SET shortcode = substr(name, 0, instr(name, ' '))''')
 	return ["Created column \"topics.shortcode\"."]
+
+def addConfigPK():
+	res = database.db().execute("SELECT * FROM config").fetchall()
+	database.db().execute('''DROP TABLE config''')
+	database.db().execute('''CREATE TABLE config (name text primary key, value text)''')
+	for r in res:
+		database.db().execute('''INSERT OR IGNORE INTO config (name,value) VALUES (?,?)''', (r["name"], r["value"]))
+	return ["Added primary key for \"config.name\"."]

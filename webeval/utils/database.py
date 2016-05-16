@@ -41,7 +41,7 @@ def reset():
 		os.unlink(DBFILE)
 
 def createTables():
-	db().execute('''CREATE TABLE config (name text, value text)''')
+	db().execute('''CREATE TABLE config (name text primary key, value text)''')
 	db().execute('''INSERT INTO config (name,value) VALUES (?,?)''', ("version", DBVERSION))
 	# Table of different topics being tested
 	db().execute('''CREATE TABLE topics (id integer primary key, name text, shortcode text)''')
@@ -192,7 +192,10 @@ SELECT
 	solutions.ordering,
 	solutions.timing,
 	students.name AS studentname,
-	topics.name AS topicname
+	students.class AS class,
+	students.medium AS medium,
+	topics.name AS topicname,
+	topics.shortcode AS topicshort
 FROM solutions
 INNER JOIN students ON (solutions.student = students.id)
 INNER JOIN topics ON (solutions.topic = topics.id)

@@ -11,6 +11,7 @@ td.last,th.last {
 	<div class="panel-body">
 		<table class="table table-striped table-bordered">
 			<thead>
+				<th>Solution</th>
 				<th>Source</th>
 				<th>Description</th>
 				<th>Destination</th>
@@ -20,6 +21,7 @@ td.last,th.last {
 			<tbody>
 			{% for c in candidates %}
 				<tr>
+					<td>{{ c.solution }} / {{ c.studentname }}</td>
 					<td>{{ c.src }}</td>
 					<td>{{ c.description }}</td>
 					<td>{{ c.dest }}</td>

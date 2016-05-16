@@ -282,11 +282,14 @@ SELECT
 	destnode.name AS dest,
 	description,
 	answers.verification,
-	answers.delay
+	answers.delay,
+	answers.solution,
+	students.name AS studentname
 FROM answers
 INNER JOIN solutions ON (answers.solution = solutions.id)
 LEFT JOIN nodes AS srcnode ON (answers.src = srcnode.id)
 LEFT JOIN nodes AS destnode ON (answers.dest = destnode.id)
+LEFT JOIN students ON (solutions.student = students.id)
 WHERE solutions.topic = ? AND answers.verification & 1 = 0
 ORDER BY delay ASC
 LIMIT ?

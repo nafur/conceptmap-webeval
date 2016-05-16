@@ -1,0 +1,24 @@
+{% extends 'master.html' %}
+{% block content %}
+<div class="panel panel-primary">
+	<div class="panel-heading">Exporting data to dot</div>
+	<div class="panel-body">
+		<form action="/export/todot" method="POST" >
+			All solutions are exported to the folder <code>export/</code>.
+			This may take some time: Every solution is first exported as a dot file and then rendered into a pdf.
+
+			<br />
+			<button type="submit" class="btn btn-primary">Start export</button>
+		</form>
+	</div>
+</div>
+
+{% if res %}
+<ul>
+	{% for r in res %}
+	<li>{{ r }}</li>
+	{% endfor %}
+</ul>
+{% endif %}
+
+{% endblock %}

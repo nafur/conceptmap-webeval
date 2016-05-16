@@ -252,6 +252,20 @@ LEFT JOIN nodes AS destnode ON (answers.dest = destnode.id)
 WHERE answers.id = ?
 	""", (id,)).fetchone()
 
+def listAnswers(solution):
+	return cursor().execute("""
+SELECT
+	src AS srcid,
+	srcnode.name AS src,
+	dest AS destid,
+	destnode.name AS dest,
+	description
+FROM view_answers
+LEFT JOIN nodes AS srcnode ON (src = srcnode.id)
+LEFT JOIN nodes AS destnode ON (dest = destnode.id)
+WHERE solution = ?
+""", (solution,)).fetchall()
+
 def addProgress(solution, ordering, action, src, dest, desc):
 	actionmap = {"create": 0, "rename": 1, "remove": 2}
 	action = actionmap[action]

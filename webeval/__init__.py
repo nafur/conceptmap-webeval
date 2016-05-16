@@ -20,7 +20,7 @@ def getVersionString():
 	if h == "": return "v%s @ %s" % (VERSION, getCommitDate())
 	return "v%s @ %s / #%s" % (VERSION, getCommitDate(), h)
 
-from webeval.utils import database, dbcompare, dbupgrade, learner, loader, stats
+from webeval.utils import database, dbcompare, dbupgrade, export, learner, loader, stats
 
 def getDBVersionState():
 	dbversion = database.getVersion()
@@ -58,5 +58,6 @@ def inject_default_values():
 	}
 
 import webeval.views.core
+import webeval.views.export
 import webeval.views.learn
 import webeval.views.statistics

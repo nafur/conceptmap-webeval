@@ -1,5 +1,5 @@
 from flask import redirect, render_template, request, safe_join, send_file
-from webeval import app, database, dbcompare, loader
+from webeval import app, database, dbcompare, dbupgrade, loader
 
 import os.path
 
@@ -56,3 +56,10 @@ def admin_compare():
 		return render_template("admin/compare.html", res = dbcompare.compareWith(filename), filename = filename)
 	else:
 		return render_template("admin/compare.html")
+
+@app.route("/admin/upgrade", methods = ["GET", "POST"])
+def admin_upgrade():
+	if request.method == "POST":
+		return render_template("admin/upgrade.html", msgs = dbupgrade.upgradeDB())
+	else:
+		return render_template("admin/upgrade.html")

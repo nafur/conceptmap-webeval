@@ -1,0 +1,43 @@
+{% extends 'master.html' %}
+{% block content %}
+
+{% if dbversionstate() %}
+<div class="panel panel-primary">
+	<div class="panel-heading">Upgrading database</div>
+	<div class="panel-body">
+		<form action="/admin/upgrade" method="POST" >
+			Databases may be upgraded to the current version without any loss of data.
+			If the current database version is <code>before-versioning</code>, the upgrade process may fail and you should have a backup.
+
+			<br />
+			<button type="submit" class="btn btn-primary">Start upgrade</button>
+		</form>
+	</div>
+</div>
+{% else %}
+<div class="panel panel-success">
+	<div class="panel-heading">
+		<h3 class="panel-title">Database is up-to-date</h3>
+	</div>
+	<div class="panel-body">
+		The database version {{ dbversion() }} matches the software version {{ version }}.
+	</div>
+</div>
+{% endif %}
+
+{% if msgs %}
+<div class="panel panel-default">
+	<div class="panel-heading">
+		<h3 class="panel-title">Upgrade process</h3>
+	</div>
+	<div class="panel-body">
+		<ul>
+	{% for m in msgs %}
+			<li>{{ m }}</li>
+	{% endfor %}
+		</ul>
+	</div>
+</div>
+{% endif %}
+
+{% endblock %}

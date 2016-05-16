@@ -9,9 +9,40 @@ DBFILE = "db.sqlite"
 VERIFICATION_FLAGS = ["fully verified", "formally correct", "content-wise correct", "structurally correct", "functionally correct"]
 VERIFICATION_ICONS = [["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"],["remove","ok"]]
 
+def db():
+	db = getattr(g, '_database', None)
+	if db is None:
+		db = g._database = sqlite3.connect(DBFILE)
+		db.row_factory = sqlite3.Row
+		cursor = db.cursor()
+		cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+		if cursor.fetchall() == []:
+			createTables()
+	return db
+
+def openMergedDB(filename):
+	db = sqlite3.connect(':memory:')
+	db.row_factory = sqlite3.Row
+	c = db.cursor()
+	c.execute("ATTACH DATABASE '%s' AS db1" % DBFILE)
+	c.execute("ATTACH DATABASE '%s' AS db2" % filename)
+	return db
+
+def close():
+	db = getattr(g, '_database', None)
+	if db is not None:
+		db.close()
+
+def cursor():
+	return db().cursor()
+
+def reset():
+	if os.path.isfile(DBFILE):
+		os.unlink(DBFILE)
+
 def createTables():
 	db().execute('''CREATE TABLE config (name text, value text)''')
-	db().execute('''INSERT INTO config (name,value) VALUES (?,?)''', ("version",VERSION))
+	db().execute('''INSERT INTO config (name,value) VALUES (?,?)''', ("version", DBVERSION))
 	# Table of different topics being tested
 	db().execute('''CREATE TABLE topics (id integer primary key, name text)''')
 	# Table of all the nodes (or terms) that must be connected. Each node is associated with a topic.
@@ -48,37 +79,6 @@ INNER JOIN solutions ON (answers.solution = solutions.id)
 INNER JOIN students ON (solutions.student = students.id)
 ''')
 
-def db():
-	db = getattr(g, '_database', None)
-	if db is None:
-		db = g._database = sqlite3.connect(DBFILE)
-		db.row_factory = sqlite3.Row
-		cursor = db.cursor()
-		cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-		if cursor.fetchall() == []:
-			createTables()
-	return db
-
-def openMergedDB(filename):
-	db = sqlite3.connect(':memory:')
-	db.row_factory = sqlite3.Row
-	c = db.cursor()
-	c.execute("ATTACH DATABASE '%s' AS db1" % DBFILE)
-	c.execute("ATTACH DATABASE '%s' AS db2" % filename)
-	return db
-
-def close():
-	db = getattr(g, '_database', None)
-	if db is not None:
-		db.close()
-
-def cursor():
-	return db().cursor()
-
-def reset():
-	if os.path.isfile(DBFILE):
-		os.unlink(DBFILE)
-
 def getVersion():
 	try:
 		return db().execute("SELECT value FROM config WHERE name='version'").fetchone()["value"]
@@ -87,6 +87,7 @@ def getVersion():
 
 def addQueryLog(caller, query, params):
 	queryLog().append((caller,query, params))
+
 def queryLog():
 	ql = getattr(request, '_querylog', None)
 	if ql is None:

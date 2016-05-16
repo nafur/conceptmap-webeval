@@ -27,6 +27,11 @@ def tableExists(name, type = "table"):
 	res = database.db().execute("SELECT name FROM sqlite_master WHERE type=? AND name=?", (type, name)).fetchall()
 	return len(res) > 0
 
+def columnExists(table, name):
+	cols = database.db().execute("PRAGMA table_info('%s')" % table).fetchall()
+	cols = filter(lambda r: r["name"] == name, cols)
+	return len(cols) > 0
+
 def createAnswerView():
 	if tableExists('view_answers', 'view'):
 		return ["View \"view_answers\" already exists."]

@@ -6,15 +6,15 @@ import re
 from webeval.utils import database
 
 FILE_PATTERN = {
-	"default": ".*/(?P<timing>(Vorher|Nachher))/(?P<topicprefix>.*)_(?P<group>[^_]*)_(?P<medium>(Video|Text))_(?P<ordering>[0-9]+)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
-	"komisch": ".*/(?P<topicprefix>[^/]*)/(?P<group>[^_]*)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
-	"flat": ".*/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
+	"categorized": ".*/(?P<timing>(Vorher|Nachher))/(?P<topicprefix>.*)_(?P<group>[^_]*)_(?P<medium>(Video|Text))_(?P<ordering>[0-9]+)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
+	"grouped": ".*/(?P<topicprefix>[^/]*)/(?P<group>[^_]*)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
+	"only-files": ".*/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
 }
 
 def patternList():
 	return sorted(FILE_PATTERN.keys())
 def patternDefault():
-	return "default"
+	return "categorized"
 
 def canonicalizeTopic(topic):
 	topic = re.sub(r'\s*[-_]\s*', ' - ', topic)

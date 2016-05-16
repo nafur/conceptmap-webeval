@@ -10,6 +10,9 @@ def upgradeFrom(baseVersion):
 		msgs += createTopicShortcode()
 		msgs += addConfigPK()
 		setVersion("0.2")
+	elif baseVersion == "0.2":
+		msgs += addSolutionFilename()
+		setVersion("0.3")
 	else:
 		msgs.append("Upgrade from version %s is not implemented." % baseVersion)
 	return msgs
@@ -36,6 +39,7 @@ def columnExists(table, name):
 	cols = filter(lambda r: r["name"] == name, cols)
 	return len(list(cols)) > 0
 
+##### before-versioning -> 0.1
 def createAnswerView():
 	if tableExists('view_answers', 'view'):
 		return ["View \"view_answers\" already exists."]
@@ -68,6 +72,7 @@ def createConfigTable():
 	database.db().execute('''CREATE TABLE config (name text, value text)''')
 	return ["Created table \"config\"."]
 
+##### 0.1 -> 0.2
 def createTopicShortcode():
 	if columnExists('topics', 'shortcode'):
 		return ["Column \"topics.shortcode\" already exists."]
@@ -82,3 +87,11 @@ def addConfigPK():
 	for r in res:
 		database.db().execute('''INSERT OR IGNORE INTO config (name,value) VALUES (?,?)''', (r["name"], r["value"]))
 	return ["Added primary key for \"config.name\"."]
+
+##### 0.2 -> 0.3
+def addSolutionFilename():
+	if columnExists('solutions', 'filename'):
+		return ["Column \"solutions.filename\" already exists."]
+	database.db().execute('''ALTER TABLE solutions ADD COLUMN filename text''')
+	database.db().exeucte('''UPDATE solutions SET filename = timing || '/' || student || '-' || id || '.csv' ''')
+	return ["Created column \"solutions.filename\"."]

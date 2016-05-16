@@ -8,6 +8,7 @@ from webeval.utils import database
 FILE_PATTERN = {
 	"default": ".*/(?P<timing>(Vorher|Nachher))/(?P<topicprefix>.*)_(?P<group>[^_]*)_(?P<medium>(Video|Text))_(?P<ordering>[0-9]+)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
 	"komisch": ".*/(?P<topicprefix>[^/]*)/(?P<group>[^_]*)/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
+	"flat": ".*/(?P<topic>.*)-(?P<student>[^-]*)_[0-9]*\.csv",
 }
 
 def patternList():
@@ -19,16 +20,17 @@ def canonicalizeTopic(topic):
 	topic = re.sub(r'\s*[-_]\s*', ' - ', topic)
 	return topic
 
-def parseFilename(filename, pattern):
+def parseFilename(filename, pattern, basePath):
 	res = re.match(FILE_PATTERN[pattern], filename.replace("\\","/"))
 	if res != None:
 		r = res.groupdict()
 		if not "timing" in r: r["timing"] = "Vorher"
 		if not "medium" in r: r["medium"] = "Text"
 		if not "ordering" in r: r["ordering"] = "1"
+		if not "topicprefix" in r: r["topicprefix"] = ""
 		topic = database.addTopic(canonicalizeTopic(r["topic"]), r["topicprefix"])
 		student = database.addStudent(r["student"].upper(), r["medium"], r["group"])
-		solution = database.addSolution(student, r["ordering"], topic, r["timing"])
+		solution = database.addSolution(student, r["ordering"], topic, r["timing"], os.path.relpath(filename, basePath))
 		return (topic,student,solution)
 	return None
 
@@ -85,7 +87,7 @@ def loadAnswerSet(path, pattern = "default"):
 	success = []
 	failed = []
 	for file in files:
-		match = parseFilename(file, pattern)
+		match = parseFilename(file, pattern, path)
 		if match == None:
 			msgs.append("Could not match \"" + file + "\" against pattern \"" + FILE_PATTERN[pattern] + "\".")
 			continue

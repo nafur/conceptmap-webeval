@@ -50,7 +50,7 @@ def createTables():
 	# Table of all students that participate. Each student is part of a group (or class) and learned the topic using a specific medium.
 	db().execute('''CREATE TABLE students (id integer primary key, name text, medium text, class text)''')
 	# Table of all solutions that the students submitted for some topic. The students work on the topics sequentially, thus there is an ordering. Furthermore, a student submits a solution both before and after the practical course.
-	db().execute('''CREATE TABLE solutions (id integer primary key, student int, topic int, ordering int, timing text)''')
+	db().execute('''CREATE TABLE solutions (id integer primary key, student int, topic int, ordering int, timing text, filename text)''')
 	# Table of all answers (or edges in one final solution). They are ordered chronologically and consist of the source and destination node and the description of the edge. They can be verified using the flags defined in VERIFICATION_FLAGS and can be delayed within the verification process.
 	db().execute('''CREATE TABLE answers (id integer primary key, solution int, ordering int, src int, dest int, description text, verification int DEFAULT 0, delay int DEFAULT 0)''')
 	# Table of the progress of a solution. Compared to the answers, it not only contains the final edges but all actions performed during the solution.
@@ -174,14 +174,14 @@ ORDER BY name
 def countStudents(**kwargs):
 	return len(listStudentsByFilter(**kwargs))
 
-def addSolution(student, ordering, topic, timing):
+def addSolution(student, ordering, topic, timing, filename):
 	c = cursor()
-	c.execute("SELECT id FROM solutions WHERE student=? AND ordering=? AND topic=? AND timing=?", (student,ordering,topic,timing))
+	c.execute("SELECT id FROM solutions WHERE student=? AND ordering=? AND topic=? AND timing=? AND filename=?", (student,ordering,topic,timing,filename))
 	res = c.fetchone()
 	if res != None:
 		return res[0]
 	with db():
-		c.execute("INSERT INTO solutions (student,ordering,topic,timing) VALUES (?,?,?,?)", (student,ordering,topic,timing))
+		c.execute("INSERT INTO solutions (student,ordering,topic,timing,filename) VALUES (?,?,?,?,?)", (student,ordering,topic,timing,filename))
 	return c.lastrowid
 
 def listSolutions():
@@ -191,6 +191,7 @@ SELECT
 	solutions.student,
 	solutions.ordering,
 	solutions.timing,
+	solutions.filename,
 	students.name AS studentname,
 	students.class AS class,
 	students.medium AS medium,

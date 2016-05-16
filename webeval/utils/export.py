@@ -1,5 +1,5 @@
 import os
-import re
+import os.path
 import subprocess
 
 from webeval.utils import database
@@ -8,35 +8,17 @@ def hasCategories():
     res = database.db().execute("SELECT medium, timing FROM view_answers GROUP BY medium,timing").fetchall()
     return len(res) > 1
 
-def getFilename(prefix, solution, suffix, cats):
-    if cats:
-        timing = solution["timing"]
-        topicname = solution["topicname"]
-        topicshort = solution["topicshort"]
-        group = solution["class"]
-        name = solution["studentname"]
-        medium = solution["medium"]
-        ordering = solution["ordering"]
-        foldername = "%s/%s/%s_%s_%s_%s" % (prefix, timing, topicshort, group, medium, ordering)
-        os.makedirs(foldername, exist_ok = True)
-        filename = "%s/%s-%s.%s" % (foldername, topicname, name, suffix)
-        return filename
-    else:
-        topicname = solution["topicname"]
-        topicshort = solution["topicshort"]
-        group = solution["class"]
-        name = solution["studentname"]
-        foldername = "%s/%s/%s" % (prefix, topicshort, group)
-        os.makedirs(foldername, exist_ok = True)
-        filename = "%s/%s-%s.%s" % (foldername, topicname, name, suffix)
-        return filename
+def getFilename(base, filename, newExt):
+    baseFilename,ext = os.path.splitext(filename)
+    return "%s/%s.%s" % (base, baseFilename, newExt)
 
 def todot(prefix):
     cats = hasCategories()
 
     res = []
     for s in database.listSolutions():
-        filename = getFilename(prefix, s, "dot", cats)
+        filename = getFilename(prefix, s["filename"], "dot")
+        os.makedirs(os.path.dirname(filename), exist_ok = True)
         res.append("Exporting solution %s" % filename)
 
         f = open(filename, "w")

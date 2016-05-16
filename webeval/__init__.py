@@ -3,8 +3,8 @@ import subprocess
 from flask import Flask, request
 app = Flask(__name__, static_folder = None)
 
-builtins.VERSION = "0.1.0"
-builtins.DBVERSION = "0.1"
+builtins.VERSION = "0.2.0"
+builtins.DBVERSION = "0.2"
 
 def getCommitDate():
 	return open("webeval/.commit-date").read()

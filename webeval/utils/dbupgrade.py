@@ -6,6 +6,9 @@ def upgradeFrom(baseVersion):
 		msgs += createAnswerView()
 		msgs += createConfigTable()
 		setVersion("0.1")
+	elif baseVersion == "0.1":
+		msgs += createTopicShortcode()
+		setVersion("0.2")
 	else:
 		msgs.append("Upgrade from version %s is not implemented." % baseVersion)
 	return msgs
@@ -62,4 +65,11 @@ def createConfigTable():
 	if tableExists('config'):
 		return ["Table \"config\" already exists."]
 	database.db().execute('''CREATE TABLE config (name text, value text)''')
-	return ["Create table \"config\"."]
+	return ["Created table \"config\"."]
+
+def createTopicShortcode():
+	if columnExists('topics', 'shortcode'):
+		return ["Column \"topics.shortcode\" already exists."]
+	database.db().execute('''ALTER TABLE topics ADD COLUMN shortcode text''')
+	database.db().exeucte('''UPDATE topics SET shortcode = substr(name, 0, instr(name, ' '))''')
+	return ["Created column \"topics.shortcode\"."]

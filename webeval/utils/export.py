@@ -21,6 +21,15 @@ def getFilename(prefix, solution, suffix, cats):
         os.makedirs(foldername, exist_ok = True)
         filename = "%s/%s-%s.%s" % (foldername, topicname, name, suffix)
         return filename
+    else:
+        topicname = solution["topicname"]
+        topicshort = solution["topicshort"]
+        group = solution["class"]
+        name = solution["studentname"]
+        foldername = "%s/%s/%s" % (prefix, topicshort, group)
+        os.makedirs(foldername, exist_ok = True)
+        filename = "%s/%s-%s.%s" % (foldername, topicname, name, suffix)
+        return filename
 
 def todot(prefix):
     cats = hasCategories()

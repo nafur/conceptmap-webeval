@@ -112,14 +112,14 @@ def executeFiltered(query, topic = "", timing = "", medium = "", ordering = "", 
 		pass
 	return cursor().execute(query, params)
 
-def addTopic(name):
+def addTopic(name, shortcode):
 	c = cursor()
 	c.execute("SELECT id FROM topics WHERE name LIKE ?", (name,))
 	res = c.fetchone()
 	if res != None:
 		return res[0]
 	with db():
-		c.execute("INSERT INTO topics (name) VALUES (?)", (name,))
+		c.execute("INSERT INTO topics (name,shortcode) VALUES (?,?)", (name,shortcode))
 	return c.lastrowid
 
 def getTopic(id):

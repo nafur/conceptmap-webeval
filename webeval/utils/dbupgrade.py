@@ -93,5 +93,5 @@ def addSolutionFilename():
 	if columnExists('solutions', 'filename'):
 		return ["Column \"solutions.filename\" already exists."]
 	database.db().execute('''ALTER TABLE solutions ADD COLUMN filename text''')
-	database.db().exeucte('''UPDATE solutions SET filename = timing || '/' || student || '-' || id || '.csv' ''')
+	database.db().execute('''UPDATE solutions SET filename = timing || '/' || student || '-' || id || '.csv' ''')
 	return ["Created column \"solutions.filename\"."]

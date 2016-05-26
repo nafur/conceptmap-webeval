@@ -3,7 +3,7 @@ import subprocess
 from flask import Flask, request
 app = Flask(__name__, static_folder = None)
 
-builtins.VERSION = "0.3.0"
+builtins.VERSION = "0.3.1"
 builtins.DBVERSION = "0.3"
 
 def getCommitDate():

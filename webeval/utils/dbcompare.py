@@ -33,9 +33,10 @@ ORDER BY va1.src,va1.dest
 	stats = {}
 	flags = range(len(database.VERIFICATION_FLAGS))
 	for f in flags:
+		if f == 0: continue
 		agreement = {"00": 0, "01": 0, "10": 0, "11": 0}
 		for r in res:
-			agreement[getID(r["v1"], r["v2"], f)] += 1
+			agreement[getID(r["v1"], r["v2"], 2**f)] += 1
 		allSum = sum(agreement.values())
 		aYes = (agreement["10"] + agreement["11"]) / allSum
 		bYes = (agreement["01"] + agreement["11"]) / allSum

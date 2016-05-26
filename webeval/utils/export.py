@@ -26,7 +26,7 @@ def todot(prefix):
         for r in database.listAnswers(s["id"]):
             f.write("\t\"%s\" -> \"%s\" [label=\"%s\"];\n" % (r["src"], r["dest"], r["description"].replace('"','')))
         f.write("\tlabelloc = \"t\";\n")
-        f.write("\tlabel = \"%s-%s\";\n" % (s["id"], s["studentname"]))
+        f.write("\tlabel = \"ID: %s / Name: %s\";\n" % (s["id"], s["studentname"]))
         f.write("}\n")
         f.close()
 

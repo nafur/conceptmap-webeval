@@ -289,7 +289,11 @@ def searchVerificationMatch(topic, src, dest, desc):
 	with db():
 		return cursor().execute("SELECT * FROM answers INNER JOIN solutions ON (answers.solution = solutions.id) WHERE verification & 1 = 1 AND topic=? AND src=? AND dest=? AND description LIKE ? GROUP BY description", (topic,src,dest,desc)).fetchall()
 
-def autoVerify():
+def autoVerify(reference = None):
+	if reference == None:
+		where = "WHERE a1.verification=0 AND a2.verification!=0"
+	else:
+		where = "WHERE a1.id != %d AND a2.id = %d" % (reference,reference)
 	query = """
 REPLACE INTO answers (id, solution, ordering, src, dest, description, verification, delay)
 SELECT a1.id, a1.solution, a1.ordering, a1.src, a1.dest, a1.description, a2.verification, a1.delay
@@ -297,9 +301,9 @@ FROM answers AS a1
 INNER JOIN solutions AS s1 ON (a1.solution = s1.id)
 INNER JOIN answers AS a2 ON (a1.src=a2.src AND a1.dest=a2.dest AND a1.description LIKE a2.description)
 INNER JOIN solutions AS s2 ON (a2.solution = s2.id AND s1.topic = s2.topic)
-WHERE a1.verification=0 AND a2.verification!=0
+%s
 GROUP BY a1.id
-"""
+""" % where
 	with db():
 		cursor().execute(query)
 
@@ -371,11 +375,12 @@ def listVerifications():
 	return VERIFICATION_FLAGS[1:]
 
 def setVerification(answer, flag):
-	print("Setting to %d" % flag)
 	with db():
 		cursor().execute("UPDATE answers SET verification=? WHERE id=?", (flag,answer))
+	autoVerify(answer)
 
 def toggleVerification(answer, flag):
 	flag = 2**VERIFICATION_FLAGS.index(flag)
 	with db():
 		cursor().execute("UPDATE answers SET verification=((~verification & ?) | (verification & ~?)) WHERE id=?", (flag,flag,answer))
+	autoVerify(answer)

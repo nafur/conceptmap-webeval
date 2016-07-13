@@ -15,6 +15,22 @@ isNumber = lambda x: isinstance(x,numbers.Real)
 formatPercent = lambda x: "%0.2f%%" % (x*100,)
 formatFloat = lambda x: "%0.2f" % x
 
+def roundDIN(data, error, pattern = "%s ±%s"):
+	"""Implements rounding with error that almost follows the rules of DIN 1333 or ISO 80000-1."""
+	format = lambda n, digits: ("%%0.%df" % digits) % n if digits > 0 else n
+	shift = 0
+	if error == 0: return pattern % (format(data, 2), "0.00")
+	while error < 3:
+		error, shift = error*10, shift+1
+	while error > 30:
+		error, shift = error/10, shift-1
+	frac = math.modf(error)[0]
+	error = math.ceil(error) if frac > 0.001 else math.floor(error)
+	moveBack = lambda x: x * (10**-shift)
+	error = moveBack(error)
+	data = moveBack(round(data * 10**shift))
+	return pattern % (format(data, shift), format(error, shift))
+
 def reformat(data, formatter, condition = isNumber):
 	if type(data) is list:
 		return [reformat(d, formatter, condition) for d in data]
@@ -114,8 +130,8 @@ ORDER BY c1 desc
 	])
 	if len(res) > 0:
 		lst.setFoot(["Average",
-			("%0.2f ±%0.2f" % (mean(res, lambda x: x["c1"]), pstdev(res, lambda x: x["c1"])), "colspan=\"2\""),
-			("%0.2f ±%0.2f" % (mean(res, lambda x: x["c3"]), pstdev(res, lambda x: x["c3"])), "colspan=\"2\""),
+			(roundDIN(mean(res, lambda x: x["c1"]), pstdev(res, lambda x: x["c1"])), "colspan=\"2\""),
+			(roundDIN(mean(res, lambda x: x["c3"]), pstdev(res, lambda x: x["c3"])), "colspan=\"2\""),
 		])
 	plt = Plot("Node usage", map(lambda r: [r["name"], [r["c1"]]], res))
 	plt.setLabels(None, "# usages")
@@ -168,7 +184,7 @@ GROUP BY student
 	ind = Individual("Stuff")
 	if len(res) > 0:
 		avg,dev = mean(res, lambda x: x["cnt"]), pstdev(res, lambda x: x["cnt"])
-		ind.add("Nodes used by students", "%0.2f ±%0.2f" % (avg,dev), "The average student used %0.2f nodes." % avg)
+		ind.add("Nodes used by students", roundDIN(avg,dev), "The average student used %s nodes." % roundDIN(avg,dev))
 	return [lst, plt, ind]
 
 def collectEdgeUsedCounts(topic, timing = "", medium = "", ordering = "", group = "", verification_require = "", verification_exclude = ""):
@@ -251,7 +267,7 @@ GROUP BY student
 	ind = Individual("Stuff")
 	if len(res) > 0:
 		avg,dev = mean(res, lambda x: x["cnt"]), pstdev(res, lambda x: x["cnt"])
-		ind.add("Edges created by students", "%0.2f ±%0.2f" % (avg,dev), "The average student created %0.2f edges." % avg)
+		ind.add("Edges created by students", roundDIN(avg,dev), "The average student created %s edges." % roundDIN(avg,dev))
 	return [lst,plt,ind]
 
 def collectEdgeCorrect(topic, timing = None, medium = None, verification = None):
@@ -276,10 +292,10 @@ WHERE n1.topic = ? AND n2.topic = ? AND (timing=? OR %d) AND (medium=? OR %d)
 	table = list(map(lambda r: list(map(lambda x: x[0]/x[1] if x[1] != 0 else 0, r)), table))
 	nodes.append("Average")
 	for row in table:
-		row.append("%0.2f ±%0.2f" % (mean(row), pstdev(row)))
+		row.append(roundDIN(mean(row), pstdev(row)))
 	newRow = []
 	for col in range(len(table[0])-1):
-		newRow.append("%0.2f ±%0.2f" % (mean(table, lambda x: float(x[col])), pstdev(table, lambda x: float(x[col]))))
+		newRow.append(roundDIN(mean(table, lambda x: float(x[col])), pstdev(table, lambda x: float(x[col]))))
 	table.append(newRow + [""])
 	table = reformat(table, formatPercent, isNumber)
 	return ["table", nodes, nodes, table]
